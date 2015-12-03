@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # GAME DNK
 
 ## Game Rules
@@ -10,8 +9,3 @@
 Для регистрации необходимы следующие web-services:
 * 'createUser'
 * 
-=======
-# dnk
-
-Редактирую
->>>>>>> 4e77bde2a2a82111d98d7edbecb06b216ea50aee
