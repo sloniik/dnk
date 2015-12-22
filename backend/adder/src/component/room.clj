@@ -15,5 +15,4 @@
 ;; protocol implementation
 (defrecord UserManager [user-db]
   RoomManagerProtocol
-
   )
