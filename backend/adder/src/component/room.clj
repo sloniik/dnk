@@ -13,6 +13,5 @@
     return map  {:status :details}."))
 
 ;; protocol implementation
-(defrecord UserManager [user-db]
-  RoomManagerProtocol
-  )
+(defrecord RoomManager [user-db]
+  RoomManagerProtocol)
