@@ -7,11 +7,14 @@
                 [[org.clojure/clojure "1.8.0-RC4"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
-                 [ring-json-params "0.1.0"]
+                 [ring-json-params "0.1.3"]
                  [compojure "1.4.0"]
-                 [clj-json "0.2.0"]
+                 [clj-json "0.5.3"]
                  [org.clojure/data.generators "0.1.2"]
                  [org.clojure/java.jdbc "0.4.2"]
+                 [mysql/mysql-connector-java "5.1.38"]
+                 [clojure.jdbc/clojure.jdbc-hikari "0.3.3"]
+                 [hikari-cp "1.5.0"]
                  [mysql/mysql-connector-java "5.1.38"]]
 
   :dev-dependencies
