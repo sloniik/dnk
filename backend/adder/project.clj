@@ -13,7 +13,9 @@
                  [org.clojure/data.generators "0.1.2"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [mysql/mysql-connector-java "5.1.38"]
-                 [clojure.jdbc/clojure.jdbc-hikari "0.3.3"]
+                 ;[clojure.jdbc/clojure.jdbc-hikari "0.3.3"]
+                 [clojure.jdbc/clojure.jdbc-c3p0 "0.3.2"]
+                 [com.mchange/c3p0 "0.9.5.2"]
                  [hikari-cp "1.5.0"]
                  [mysql/mysql-connector-java "5.1.38"]]
 
