@@ -58,7 +58,9 @@
                     [:password "VARCHAR(100)"]
                     :table-spec "ENGINE=InnoDB"))
 
-
+(defn get-all-users
+  "Get list of all users"
+  )
 
 (def pooled-db-spec
   {:datasource (j/make-pool mysql-db)})
