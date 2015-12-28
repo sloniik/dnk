@@ -64,3 +64,40 @@
 
 (def pooled-db-spec
   {:datasource (j/make-pool mysql-db)})
+
+;; ================ User functions ===================
+
+
+;;Список пользователей. Получаются значения полей, кроме password и salt
+(def get-all-users
+  "List of all users"
+  )
+
+;;Получаем соль по id пользователя
+(def get-user-salt
+  "Get salt by user-id"
+  [user-id])
+
+;;Получем соль по логину
+(def get-user-salt
+  "Get salt by login"
+  [login])
+
+;;Получаем значения полей пользователя (кроме password и salt) по user-id
+(def get-user
+  "Get user by user-id"
+  [user-id])
+
+(def get-user
+  "Get user by login"
+  [login])
+
+(def is-login-available
+  "Check whether login available"
+  [login])
+
+(def is-)
+
+
+(def is-password-match
+  "Check if ")
