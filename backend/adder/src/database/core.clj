@@ -58,7 +58,9 @@
                     [:password "VARCHAR(100)"]
                     :table-spec "ENGINE=InnoDB"))
 
-
+;;test function by Suobig
+(def suobig-test
+  "Тестовая функция")
 
 (def pooled-db-spec
   {:datasource (j/make-pool mysql-db)})
