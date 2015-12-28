@@ -65,8 +65,8 @@
 (def pooled-db-spec
   {:datasource (j/make-pool mysql-db)})
 
-;; ================ User functions ===================
 
+;; ================ User Get functions ===================
 
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (def get-all-users
@@ -92,12 +92,32 @@
   "Get user by login"
   [login])
 
+(def get-media-types
+  "Get all types of media available"
+  )
+
+(def get-user-media
+  "Gets mediafiles of certaion type created by user"
+  [user-id media-type])
+
+(def get-all-user-sessions
+  "Gets all sessions, made by user"
+  [user-id])
+
+(def get-current-user-session
+  "Gets current session by certain user"
+  [user-id])
+
+;;Проверяет, что такое имя пользователя доступно (не занято кем-то еще)
 (def is-login-available
   "Check whether login available"
   [login])
 
-(def is-)
+(def is-email-registered
+  "Check whether email is already registered"
+  [email])
 
-
-(def is-password-match
-  "Check if ")
+;;Проверяет, что введен верный пароль
+(def is-password-correct
+  "Check if password is correct"
+  [password-hash])
