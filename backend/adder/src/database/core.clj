@@ -3,7 +3,7 @@
 
 (ns database.core
   (:gen-class)
-  ;(:import com.mchange.v2.c3p0.ComboPooledDataSource)
+  (:import com.mchange.v2.c3p0.ComboPooledDataSource)
   (:require [clojure.java.jdbc :as jdbc]
             [jdbc.pool.c3p0    :as pool]))
 
@@ -32,6 +32,7 @@
 
 (defn db-connection [] @pooled-db)
 
+(def conn db-connection)
 ;
 ;(let [db (myapp.db/connection)]
 ;  (jdbc/with-connection db
@@ -42,9 +43,7 @@
 ;           {:name "Apple" :appearance "rosy" :cost 24}
 ;           {:name "Orange" :appearance "round" :cost 49})
 
-;(def a (j/query mysql-db
-;          ["select * from fruit where appearance = ?" "rosy"]
-;          :row-fn :cost))
+
 
 ;(def tstr (j/create-table-ddl
 ;  :users
@@ -77,18 +76,17 @@
 ;                    [:password "VARCHAR(100)"]
 ;                    :table-spec "ENGINE=InnoDB"))
 
-(def db-spec
-  {:datasource (clojure.java.jdbc mysql-db)})
-
 (defn select-all-values-from-table
   "return all values from specified table "
   [db-spec table-name]
-  (j/query db-spec [str ("select * from " table-name )]))
+  (println (str "select * from fruit" table-name ))
+  (jdbc/query db-spec [(str "select * from " table-name)]))
+
 
 (defn select-all-values-from-table-by-id
   "return all values from specified table with col-id-name and id-value"
   [db-spec table-name col-id-name id-val]
-  (j/query db-spec
+  (jdbc/query db-spec
            [str ("select * from " table-name " where " col-id-name " = ?" id-val)]))
 
 ;; ================ User functions ===================
@@ -181,16 +179,17 @@
   "Get collection of n newest games"
   [number])
 
-(def get-games-by-autor
+(defn get-games-by-autor
   "Get collection of games by author"
   [author-id])
 
 ;;Получаем список игр с isFork = false
 (defn get-all-original-games
-  "Get all games that are not forks")
+  "Get all games that are not forks"
+  [])
 
 ;;Получаем список форков игры
-(def get-game-forks
+(defn get-game-forks
   "Get all forks of a certain game"
   [game-id])
 
@@ -207,3 +206,11 @@
 (defn get-game-by-id
   "Get game data by it's id"
   [game-id])
+
+
+
+;; ==== TESTs ====
+(select-all-values-from-table db-spec "fruit")
+
+(jdbc/query db-spec
+                   ["select * from fruit where appearance = ?" "rosy"])
