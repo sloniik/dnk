@@ -5,14 +5,14 @@
   (:gen-class)
   (:import com.mchange.v2.c3p0.ComboPooledDataSource)
   (:require [clojure.java.jdbc :as jdbc]
-            [jdbc.pool.c3p0    :as pool]))
+            [jdbc.pool.c3p0 :as pool]))
 
 
-(def db-spec {:classname "com.mysql.jdbc.Driver"
+(def db-spec {:classname   "com.mysql.jdbc.Driver"
               :subprotocol "mysql"
-              :subname "//127.0.0.1:3306/clojure_test"
-              :user "clojure_test"
-              :password "clojure_test"})
+              :subname     "//127.0.0.1:3306/clojure_test"
+              :user        "clojure_test"
+              :password    "clojure_test"})
 
 ;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
 (defn pool
@@ -33,61 +33,27 @@
 (defn db-connection [] @pooled-db)
 
 (def conn db-connection)
-;
-;(let [db (myapp.db/connection)]
-;  (jdbc/with-connection db
-;                        (jdbc/with-query-results rs ["select * from foo"]
-;                                                 (doseq [row rs]
-;                                                   (println row))))))
-;(sql/insert! db :fruit
-;           {:name "Apple" :appearance "rosy" :cost 24}
-;           {:name "Orange" :appearance "round" :cost 49})
 
-
-
-;(def tstr (j/create-table-ddl
-;  :users
-;  [:id :int "PRIMARY KEY AUTO_INCREMENT"]
-;  [:name "VARCHAR(32)"]
-;  [:email "VARCHAR(32)"]
-;  [:active? "TINYINT(1)"]
-;  [:ban? "TINYINT(1)"]
-;  [:passw-hash "VARCHAR(100)"]
-;  :table-spec "ENGINE=InnoDB"))
-
-
-;; insert into database
-;(j/insert! mysql-db :fruit
-;           {:name "Apple" :appearance "rosy" :cost 24}
-;           {:name "Orange" :appearance "round" :cost 49})
-
-
-;; создание таблицы
-;(j/db-do-commands mysql-db
-;                  (j/create-table-ddl
-;                    :users
-;                    [:id :int "PRIMARY KEY AUTO_INCREMENT"]
-;                    [:name "VARCHAR(32)"]
-;                    [:email "VARCHAR(32)"]
-;                    [:active "VARCHAR(2)"]
-;                    [:ban "VARCHAR(2)"]
-;                    [:seenLasttTime "DATE"]
-;                    [:regdate "DATE"]
-;                    [:password "VARCHAR(100)"]
-;                    :table-spec "ENGINE=InnoDB"))
+;; === MAIN_DB_FUNCTIONs ===
+(defn select-col-from-table
+  "return specific column from table"
+  [db-spec table-name col-name]
+  (jdbc/query db-spec [str "select " col-name " from " table-name]))
 
 (defn select-all-values-from-table
-  "return all values from specified table "
+  "return all values from table "
   [db-spec table-name]
-  (println (str "select * from fruit" table-name ))
-  (jdbc/query db-spec [(str "select * from " table-name)]))
+  (select-col-from-table db-spec table-name "*"))
 
+(defn select-col-from-table-by-field
+  "return specific column from table where field-name = field-val"
+  [db-spec table-name col-name field-name field-val]
+  (jdbc/query db-spec [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
 
-(defn select-all-values-from-table-by-id
+(defn select-all-values-from-table-by-field
   "return all values from specified table with col-id-name and id-value"
-  [db-spec table-name col-id-name id-val]
-  (jdbc/query db-spec
-           [str ("select * from " table-name " where " col-id-name " = ?" id-val)]))
+  [db-spec table-name field-name field-val]
+  (select-col-from-table-by-field db-spec table-name "*" field-name field-val))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
@@ -163,11 +129,11 @@
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
-      [])
+  [])
 
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
-      [])
+  [])
 
 ;;Получаем список игр определенного типа
 (defn get-games-by-variant
@@ -213,4 +179,15 @@
 (select-all-values-from-table db-spec "fruit")
 
 (jdbc/query db-spec
-                   ["select * from fruit where appearance = ?" "rosy"])
+            ["select name, cost from fruit where appearance = ?" "rosy"])
+
+(select-col-from-table db-spec "fruit" "name")
+(def a (select-col-from-table db-spec "fruit" "name"))
+(def b (select-col-from-table db-spec "fruit" "cost"))
+
+(jdbc/query db-spec [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
+(select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
+
+(select-col-from-table db-spec "fruit" "cost")
+(jdbc/query db-spec [(str "select name from fruit where cost = ?" ) 24])
+(select-col-from-table-by-id db-spec "fruit" "name" "cost" 24)
