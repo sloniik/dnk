@@ -1,6 +1,6 @@
-(defproject adder "0.1.0-SNAPSHOT"
-  :description "Add two numbers"
-  :url "http://example.com/FIXME"
+(defproject dnk "0.0.1"
+  :description "Game DNK"
+  :url "https://github.com/sloniik/dnk/"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies
@@ -15,10 +15,11 @@
                  [mysql/mysql-connector-java "5.1.38"]
                  [clojure.jdbc/clojure.jdbc-hikari "0.3.3"]
                  [hikari-cp "1.5.0"]
-                 [mysql/mysql-connector-java "5.1.38"]]
+                 [mysql/mysql-connector-java "5.1.38"]
+                 [clojure.jdbc/clojure.jdbc-c3p0 "0.3.2"]]
 
   :dev-dependencies
                 [[lein-run "1.2.1"]]
 
-  :main         cabinet.web
+  :main         dnk.web
   )

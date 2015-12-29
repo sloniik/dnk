@@ -3,16 +3,42 @@
 
 (ns database.core
   (:gen-class)
-  (:require [clojure.java.jdbc :as j]))
+  ;(:import com.mchange.v2.c3p0.ComboPooledDataSource)
+  (:require [clojure.java.jdbc :as jdbc]
+            [jdbc.pool.c3p0    :as pool]))
 
 
-(def mysql-db {:classname "com.mysql.jdbc.Driver"
-               :subprotocol "mysql"
-               :subname "//127.0.0.1:3306/clojure_test"
-               :user "clojure_test"
-               :password "clojure_test"})
+(def db-spec {:classname "com.mysql.jdbc.Driver"
+              :subprotocol "mysql"
+              :subname "//127.0.0.1:3306/clojure_test"
+              :user "clojure_test"
+              :password "clojure_test"})
 
-;(j/insert! mysql-db :fruit
+;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
+(defn pool
+  [spec]
+  (let [cpds (doto (ComboPooledDataSource.)
+               (.setDriverClass (:classname spec))
+               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
+               (.setUser (:user spec))
+               (.setPassword (:password spec))
+               ;; expire excess connections after 30 minutes of inactivity:
+               (.setMaxIdleTimeExcessConnections (* 30 60))
+               ;; expire connections after 3 hours of inactivity:
+               (.setMaxIdleTime (* 3 60 60)))]
+    {:datasource cpds}))
+
+(def pooled-db (delay (pool db-spec)))
+
+(defn db-connection [] @pooled-db)
+
+;
+;(let [db (myapp.db/connection)]
+;  (jdbc/with-connection db
+;                        (jdbc/with-query-results rs ["select * from foo"]
+;                                                 (doseq [row rs]
+;                                                   (println row))))))
+;(sql/insert! db :fruit
 ;           {:name "Apple" :appearance "rosy" :cost 24}
 ;           {:name "Orange" :appearance "round" :cost 49})
 
@@ -51,12 +77,21 @@
 ;                    [:password "VARCHAR(100)"]
 ;                    :table-spec "ENGINE=InnoDB"))
 
-(def pooled-db-spec
-  {:datasource (j/make-pool mysql-db)})
+(def db-spec
+  {:datasource (clojure.java.jdbc mysql-db)})
+
+(defn select-all-values-from-table
+  "return all values from specified table "
+  [db-spec table-name]
+  (j/query db-spec [str ("select * from " table-name )]))
+
+(defn select-all-values-from-table-by-id
+  "return all values from specified table with col-id-name and id-value"
+  [db-spec table-name col-id-name id-val]
+  (j/query db-spec
+           [str ("select * from " table-name " where " col-id-name " = ?" id-val)]))
 
 ;; ================ User functions ===================
-
-
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (defn get-all-users
   "List of all users"

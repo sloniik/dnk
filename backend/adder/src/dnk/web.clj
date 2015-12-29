@@ -1,4 +1,4 @@
-(ns cabinet.web
+(ns dnk.web
   (:use compojure.core)
   (:use ring.middleware.json-params)
   (:use ring.middleware.params

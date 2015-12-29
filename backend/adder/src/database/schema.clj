@@ -21,5 +21,5 @@
   (jdbc/create-table-ddl
     :rooms
     [:id :int "PRIMARY KEY AUTO_INCREMENT"]
-    [:name ]
+    [:name "VARCHAR(100)"]
     :table-spec "ENGINE=InnoDB"))
