@@ -70,11 +70,8 @@
 
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (def get-all-users
-  "List of all users")
-
-;;Список пользователей, у которых isActive = true
-(def get-all-active-users
-  "List of all active users")
+  "List of all users"
+  )
 
 ;;Получаем соль по id пользователя
 (def get-user-salt
@@ -95,11 +92,30 @@
   "Get user by login"
   [login])
 
+(def get-media-types
+  "Get all types of media available"
+  )
+
+(def get-user-media
+  "Gets mediafiles of certaion type created by user"
+  [user-id media-type])
+
+(def get-all-user-sessions
+  "Gets all sessions, made by user"
+  [user-id])
+
+(def get-current-user-session
+  "Gets current session by certain user"
+  [user-id])
 
 ;;Проверяем, что данный логин еще не занят
 (def is-login-available
   "Check whether login available"
   [login])
+
+(def is-email-registered
+  "Check whether email is already registered"
+  [email])
 
 ;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
 (def is-password-match
