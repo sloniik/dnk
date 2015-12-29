@@ -3,127 +3,122 @@
 
 (ns database.core
   (:gen-class)
-  (:import com.mchange.v2.c3p0.ComboPooledDataSource)
-  (:require [clojure.java.jdbc :as jdbc])
-  (:require [database.schema :as schema])
-  (:require [jdbc.pool.c3p0 :as pool]))
+  (:require [clojure.java.jdbc :as j]))
 
-(def mysql-db
-  "db-spec to create conn"
-  {:classname "com.mysql.jdbc.Driver"
+
+(def mysql-db {:classname "com.mysql.jdbc.Driver"
                :subprotocol "mysql"
                :subname "//127.0.0.1:3306/clojure_test"
                :user "clojure_test"
                :password "clojure_test"})
 
-(defn pool
-  "function creates pool of conn to database (which is specified in spec)"
-  [spec]
-  (let [cpds (doto (ComboPooledDataSource.)
-               (.setDriverClass (:classname spec))
-               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
-               (.setUser (:user spec))
-               (.setPassword (:password spec))
-               ;; expire excess connections after 30 minutes of inactivity:
-               (.setMaxIdleTimeExcessConnections (* 30 60))
-               ;; expire connections after 3 hours of inactivity:
-               (.setMaxIdleTime (* 3 60 60)))]
-    {:datasource cpds}))
+(j/insert! mysql-db :fruit
+           {:name "Apple" :appearance "rosy" :cost 24}
+           {:name "Orange" :appearance "round" :cost 49})
 
-(def pooled-db (delay (pool mysql-db)))
+(def a (j/query mysql-db
+          ["select * from fruit where appearance = ?" "rosy"]
+          :row-fn :cost))
 
-
-(defn db-connection
-  "create pooled connection to database"
-  [] @pooled-db)
-
-;; conn to database (within a pool)
-(def conn (db-connection))
+(def tstr (j/create-table-ddl
+  :users
+  [:id :int "PRIMARY KEY AUTO_INCREMENT"]
+  [:name "VARCHAR(32)"]
+  [:email "VARCHAR(32)"]
+  [:active? "TINYINT(1)"]
+  [:ban? "TINYINT(1)"]
+  [:passw-hash "VARCHAR(100)"]
+  :table-spec "ENGINE=InnoDB"))
 
 
-;; create tables
-; create users table
-;(jdbc/db-do-commands conn schema/create-users-table)
+;; insert into database
+(j/insert! mysql-db :fruit
+           {:name "Apple" :appearance "rosy" :cost 24}
+           {:name "Orange" :appearance "round" :cost 49})
 
-;;ORM
-(defn select-all-from-table
-  "perform simple _select * from <table>_
-  conn - connection
-  table - string table name"
-  [conn table]
-  (jdbc/query conn [ (str "select * from " table)]))
+;; пока не понял разнцы со следующим выражением, но это подключение к базе
+(def conn
+  (j/get-connection mysql-db))
 
-;;=======================
-;; user-table-functions
-;;=======================
+;; подключение к базе
+(def db (j/db-find-connection mysql-db))
+(def db2 (j/connection))
 
-;CREATE TABLE User
-;(`idUser` BIGINT NOT NULL AUTO_INCREMENT,PRIMARY KEY (idUser)
-;`UserName` VARCHAR(250) NOT NULL
-;`PasswordHash` VARBINARY(65535) NOT NULL
-;`Salt` VARCHAR(250) NOT NULL
-;`Email` VARCHAR(250)  NULL
-;`UserStory` VARCHAR(2048)  NULL
-;`PhoneNumber` VARCHAR(250)  NULL
-;`UserToken` VARBINARY(65535)  NULL
-;`idUserSession` BIGINT  NULL
-;`dtCreated` DATETIME NOT NULL
-;`isOnline` BIT NOT NULL
-;`isActive` BIT NOT NULL
-;`isAdmin` BIT NOT NULL)
+;; создание таблицы
+(j/db-do-commands mysql-db
+                  (j/create-table-ddl
+                    :users
+                    [:id :int "PRIMARY KEY AUTO_INCREMENT"]
+                    [:name "VARCHAR(32)"]
+                    [:email "VARCHAR(32)"]
+                    [:active "VARCHAR(2)"]
+                    [:ban "VARCHAR(2)"]
+                    [:seenLasttTime "DATE"]
+                    [:regdate "DATE"]
+                    [:password "VARCHAR(100)"]
+                    :table-spec "ENGINE=InnoDB"))
 
-(defn select-all-users
-  "select all info in users table"
-  [conn]
-  (select-all-from-table conn "Users"))
+;;test function by Suobig
+(def suobig-test
+  "Тестовая функция")
 
-(defn select-user-by-col-val
-  "select all user-info by any col and value"
-  [conn col val]
-  (jdbc/query conn [(str "select * from Users where " col "=?") val]))
-
-(defn select-user-by-id
-  "select all user-info by id
-  id - guid|int"
-  [conn id]
-  (select-user-by-col-val conn "idUser" id))
-
-(defn select-user-by-name
-  "select all user-info by name
-  name - string"
-  [conn name]
-  (select-user-by-col-val conn "UserName" name))
-
-(defn select-user-by-email
-  "select all user-info by name
-  name - string"
-  [conn email]
-  (select-user-by-col-val conn "Email" email))
-
-;(j/insert! mysql-db :fruit
-;           {:name "Apple" :appearance "rosy" :cost 24}
-;           {:name "Orange" :appearance "round" :cost 49})
+(def pooled-db-spec
+  {:datasource (j/make-pool mysql-db)})
 
 
+;; ================ User Get functions ===================
 
+;;Список пользователей. Получаются значения полей, кроме password и salt
+(def get-all-users
+  "List of all users"
+  )
 
+;;Получаем соль по id пользователя
+(def get-user-salt
+  "Get salt by user-id"
+  [user-id])
 
-;;ORM-function
-;(defn query
-;  "get map: [{:table table-name}
-;             {:where-col where-col-name}
-;             {:where-col-val where-col-value}
-;             {:col1 col1-name
-;             :col2 col2-name}"
-;  [table-name w-col-name w-col-val &cols]
-;  (let [t-name :table table-name
-;        where-col-name :where-col w-col-name
-;        where-col-value :where-col-val w-col-val
-;        all-cols (vals cols)
-;        str-col-list (if (nil? all-cols ) "*"
-;                                          (map (fn [ch] (str ch " ,")) all-cols))
-;        str-where (if (nil? where-col-name) ""
-;                                            (str "where " where-col-name "= ?" " " where-col-value)))
-;        ]
-;    (jdbc/query conn [(str "select " str-col-list " from " t-name " " str-where]))))
+;;Получем соль по логину
+(def get-user-salt
+  "Get salt by login"
+  [login])
+
+;;Получаем значения полей пользователя (кроме password и salt) по user-id
+(def get-user
+  "Get user by user-id"
+  [user-id])
+
+(def get-user
+  "Get user by login"
+  [login])
+
+(def get-media-types
+  "Get all types of media available"
+  )
+
+(def get-user-media
+  "Gets mediafiles of certaion type created by user"
+  [user-id media-type])
+
+(def get-all-user-sessions
+  "Gets all sessions, made by user"
+  [user-id])
+
+(def get-current-user-session
+  "Gets current session by certain user"
+  [user-id])
+
+;;Проверяет, что такое имя пользователя доступно (не занято кем-то еще)
+(def is-login-available
+  "Check whether login available"
+  [login])
+
+(def is-email-registered
+  "Check whether email is already registered"
+  [email])
+
+;;Проверяет, что введен верный пароль
+(def is-password-correct
+  "Check if password is correct"
+  [password-hash])
 
