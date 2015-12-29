@@ -28,17 +28,13 @@
                (.setMaxIdleTime (* 3 60 60)))]
     {:datasource cpds}))
 
-(def pooled-db (delay (pool db-spec)))
-
-(defn db-connection [] @pooled-db)
-
-(def conn db-connection)
+(def pooled-db  (pool db-spec))
 
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col-from-table
   "return specific column from table"
   [db-spec table-name col-name]
-  (jdbc/query db-spec [str "select " col-name " from " table-name]))
+    (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
 
 (defn select-all-values-from-table
   "return all values from table "
@@ -48,7 +44,8 @@
 (defn select-col-from-table-by-field
   "return specific column from table where field-name = field-val"
   [db-spec table-name col-name field-name field-val]
-  (jdbc/query db-spec [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
+  (jdbc/query db-spec
+              [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
 
 (defn select-all-values-from-table-by-field
   "return all values from specified table with col-id-name and id-value"
@@ -176,18 +173,49 @@
 
 
 ;; ==== TESTs ====
-(select-all-values-from-table db-spec "fruit")
+(select-all-values-from-table pooled-db "fruit")
 
-(jdbc/query db-spec
+(jdbc/query pooled-db
             ["select name, cost from fruit where appearance = ?" "rosy"])
 
-(select-col-from-table db-spec "fruit" "name")
-(def a (select-col-from-table db-spec "fruit" "name"))
-(def b (select-col-from-table db-spec "fruit" "cost"))
+(defn select-col-from-table-new
+  "return specific column from table"
+  [db-spec table-name col-name]
+  (jdbc/with-db-connection [t-con db-spec]
+                           (println (jdbc/db-connection t-con))
+                           (jdbc/query t-con [(str "select " col-name " from " table-name)])))
 
-(jdbc/query db-spec [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
+
+
+(select-col-from-table-new pooled-db "fruit" "name")
+(def a (select-col-from-table pooled-db "fruit" "name"))
+(def b (select-col-from-table pooled-db "fruit" "cost"))
+
+(jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
 (select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
 
-(select-col-from-table db-spec "fruit" "cost")
-(jdbc/query db-spec [(str "select name from fruit where cost = ?" ) 24])
-(select-col-from-table-by-id db-spec "fruit" "name" "cost" 24)
+(select-col-from-table pooled-db "fruit" "cost")
+(jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
+(select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
+
+
+
+(defn update-or-insert!
+  "Updates columns or inserts a new row in the specified table"
+  [db table row where-clause]
+  (jdbc/with-db-transaction [t-con db]
+                         (let [result (jdbc/update! t-con table row where-clause)]
+                           (println t-con)
+                           (println db)
+                           (if (zero? (first result))
+                             (jdbc/insert! t-con table row)
+                             result))))
+
+(update-or-insert! db-spec :fruit
+                   {:name "Cactus" :appearance "Spiky" :cost 2000}
+                   ["name = ?" "Cactus"])
+;; inserts Cactus (assuming none exists)
+;(update-or-insert! mysql-db :fruit
+;                   {:name "Cactus" :appearance "Spiky" :cost 2500}
+;                   ["name = ?" "Cactus"])
+;;; updates the Cactus we just inserted
