@@ -2,6 +2,8 @@
 (def user-list [{:id 1
                  :name "Sergey"
                  :email "serge@me.com"
+                 :active? true
+                 :ban? false
                  :passw-hash 123
                  }
                 {:id 2
