@@ -70,8 +70,11 @@
 
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (def get-all-users
-  "List of all users"
-  )
+  "List of all users")
+
+;;Список пользователей, у которых isActive = true
+(def get-all-active-users
+  "List of all active users")
 
 ;;Получаем соль по id пользователя
 (def get-user-salt
@@ -92,12 +95,15 @@
   "Get user by login"
   [login])
 
+
+;;Проверяем, что данный логин еще не занят
 (def is-login-available
   "Check whether login available"
   [login])
 
-(def is-)
-
-
+;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
 (def is-password-match
-  "Check if ")
+  "Check if hashed password in database matches calculated hash"
+  [password-hash])
+
+
