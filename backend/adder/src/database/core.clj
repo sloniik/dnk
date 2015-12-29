@@ -58,67 +58,7 @@
                     [:password "VARCHAR(100)"]
                     :table-spec "ENGINE=InnoDB"))
 
-;;test function by Suobig
-(def suobig-test
-  "Тестовая функция")
+
 
 (def pooled-db-spec
   {:datasource (j/make-pool mysql-db)})
-
-
-;; ================ User Get functions ===================
-
-;;Список пользователей. Получаются значения полей, кроме password и salt
-(def get-all-users
-  "List of all users"
-  )
-
-;;Получаем соль по id пользователя
-(def get-user-salt
-  "Get salt by user-id"
-  [user-id])
-
-;;Получем соль по логину
-(def get-user-salt
-  "Get salt by login"
-  [login])
-
-;;Получаем значения полей пользователя (кроме password и salt) по user-id
-(def get-user
-  "Get user by user-id"
-  [user-id])
-
-(def get-user
-  "Get user by login"
-  [login])
-
-(def get-media-types
-  "Get all types of media available"
-  )
-
-(def get-user-media
-  "Gets mediafiles of certaion type created by user"
-  [user-id media-type])
-
-(def get-all-user-sessions
-  "Gets all sessions, made by user"
-  [user-id])
-
-(def get-current-user-session
-  "Gets current session by certain user"
-  [user-id])
-
-;;Проверяет, что такое имя пользователя доступно (не занято кем-то еще)
-(def is-login-available
-  "Check whether login available"
-  [login])
-
-(def is-email-registered
-  "Check whether email is already registered"
-  [email])
-
-;;Проверяет, что введен верный пароль
-(def is-password-correct
-  "Check if password is correct"
-  [password-hash])
-
