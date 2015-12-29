@@ -122,4 +122,60 @@
   "Check if hashed password in database matches calculated hash"
   [password-hash])
 
+;;======================== Game Get Functions =====================================
 
+;;Получаем список всех игр
+(def get-all-games
+  "Get collection of all games ever created")
+
+;;Получаем список игр с параметром isDeleted = false
+(def get-all-active-games
+  "Get collection of all games that are currently active")
+
+;;Получем список игр с параметром isPrivate = false
+(def get-all-public-games
+  "Get collection of all non-private games")
+
+;;Получаем список всех типов игр
+(def get-game-types
+  "Get all available game types")
+
+;;Получаем список всех вариантов определенного типа игры
+(def get-game-variants)
+
+;;Получаем список игр определенного типа
+(def get-games-by-variant
+  "Get collection of games by variant"
+  [id-game-variant])
+
+;;Получаем несколько новых игр
+(def get-new-games
+  "Get collection of n newest games"
+  [number])
+
+(def get-games-by-autor
+  "Get collection of games by author"
+  [id-author])
+
+;;Получаем список игр с isFork = false
+(def get-all-original-games
+  "Get all games that are not forks")
+
+;;Получаем список форков игры
+(def get-game-forks
+  "Get all forks of a certain game"
+  [game-id])
+
+;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
+(def get-game-media
+  "Get all media for a certain game"
+  [game-id])
+
+;;Получаем набор пользователей (TODO: надо определиться с формой) по данной игре
+(def get-game-users
+  "Get all users for a certain game"
+  [game-id])
+
+(def get-game-by-id
+  "Get game data by it's id"
+  [game-id])
