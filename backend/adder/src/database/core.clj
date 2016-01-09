@@ -54,28 +54,57 @@
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
+(def user-table "Users")
+(def user-salt-col "Salt")
+(def salt-key :salt)
+(def user-pass-col "PasswordHash")
+(def pass-key :passwordhash)
+(def user-id-col "idUser")
+(def user-login-col "UserName")
+
 (defn get-all-users
   "List of all users"
-  [])
+  []
+  (select-all-values-from-table db-spec user-table))
 
-;;Получаем соль по id пользователя
-(defn get-user-salt
-  "Get salt by user-id"
-  [user-id])
-
-;;Получем соль по логину
-(defn get-user-salt
-  "Get salt by login"
-  [login])
-
-;;Получаем значения полей пользователя (кроме password и salt) по user-id
-(defn get-user
+;;Получаем пользователя по id пользователя
+(defn get-user-info-by-id
   "Get user by user-id"
-  [user-id])
+  [user-id]
+  (select-all-values-from-table-by-field db-spec user-table user-id-col user-id))
 
-(defn get-user
+;;Получем пользователя по логину
+(defn get-user-info-by-login
   "Get user by login"
-  [login])
+  [login]
+  (select-all-values-from-table-by-field db-spec user-table user-login-col login))
+
+;;Общая функция информации по пользователю  пользователя
+(defn get-user-info
+  "Get user salt"
+  [id type]
+  (if (= type :login)
+    (get-user-info-by-login id)
+    (get-user-info-by-id id)))
+
+(defn get-user-salt
+  "Get user salt"
+  [id id-type]
+  (let [user-info (get-user-info id id-type)]
+    (salt-key user-info)))
+
+(defn get-user-pass
+  "get user password hash"
+  [id id-type]
+  (let [user-info (get-user-info id id-type)]
+    (pass-key user-info)))
+
+;;Получаем значения полей пользователя (кроме password и salt)
+(defn get-user-safe-info
+  "Get user by type key (id or login)"
+  [id id-type]
+  (let [user-info (get-user-info id id-type)]
+    (dissoc (dissoc user-info salt-key) pass-key)))
 
 (def get-media-types
   "Get all types of media available"
