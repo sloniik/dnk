@@ -138,66 +138,183 @@
 
 ;;======================== Game Get Functions =====================================
 
+(def game-table "Game")
+(def deleted?-field "isDeleted")
+(def private?-field "isPrivate")
+(def game-type-table "GameType")
+(def game-variant-table "GameVariant")
+(def game-media-table "GameMedia")
+(def id-game-field "idGame")
+(def id-game-type-filed "idGameType")
+(def id-game-variant-field "idGameVariant")
+(def id-author-field "idAuthor")
+(def id-original-field "idOriginal")
+
 ;;Получаем список всех игр
 (defn get-all-games
   "Get collection of all games ever created"
-  [])
+  [db-spec]
+  (select-all-values-from-table db-spec
+                                game-table))
 
+;;TODO: понять как передать false
 ;;Получаем список игр с параметром isDeleted = false
 (def get-all-active-games
   "Get collection of all games that are currently active"
-  [])
+  [db-spec]
+  (select-all-values-from-table-by-field db_spec
+                                         game-table
+                                         deleted?-field
+                                         false))
+
+;;TODO: понять как передать false
 ;;Получем список игр с параметром isPrivate = false
 (defn get-all-public-games
   "Get collection of all non-private games"
-  [])
+  [db-spec]
+  (select-all-values-from-table-by-field db_spec
+                                         game-table
+                                         private?-field
+                                         false))
 
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
-  [])
+  [db-spec]
+  (select-all-values-from-table db-spec
+                                game-type-table))
 
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
-  [])
+  [db-spec id-game-type]
+      (select-all-values-from-table-by-field db_spec
+                                             game-variant-table
+                                             id-game-type-filed
+                                             id-game-type))
 
 ;;Получаем список игр определенного типа
 (defn get-games-by-variant
   "Get collection of games by variant"
-  [id-game-variant])
+  [db-spec id-game-variant]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-game-variant-field
+                                             id-game-variant))
 
+;TODO: пока не знаю как писать
 ;;Получаем несколько новых игр
 (defn get-new-games
   "Get collection of n newest games"
-  [number])
+  [db-spec number]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-game-variant-field
+                                             id-game-variant))
 
+
+;;Получаем список игр конкретного автора
 (defn get-games-by-autor
   "Get collection of games by author"
-  [author-id])
+  [db-spec id-author]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-author-field
+                                             id-author))
 
-;;Получаем список игр с isFork = false
+;TODO: понять, как передается Null как значение поля в БД
+;;Получаем список игр с idOriginal = null
 (defn get-all-original-games
   "Get all games that are not forks"
-  [])
+  [db-spec]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-original-field
+                                             nil))
 
 ;;Получаем список форков игры
 (defn get-game-forks
   "Get all forks of a certain game"
-  [game-id])
+  [db-spec id-game]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-original-field
+                                             id-game))
 
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
   "Get all media for a certain game"
-  [game-id])
+  [db-spec game-id]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-original-field
+                                             id-game))
 
-;;Получаем набор пользователей (TODO: надо определиться с формой) по данной игре
+;;TODO: надо определиться с формой
+;;Получаем набор пользователей по данной игре
 (defn get-game-users
   "Get all users for a certain game"
-  [game-id])
+  [db-spec id-game]
+      (select-all-values-from-table-by-field db_spec
+                                             game-media-table
+                                             id-game-field
+                                             id-game))
 
 (defn get-game-by-id
   "Get game data by it's id"
-  [game-id])
+  [db-spec id-game]
+      (select-all-values-from-table-by-field db_spec
+                                             game-table
+                                             id-game-field
+                                             id-game))
+
+
+;; ==== TESTs ====
+(select-all-values-from-table pooled-db "fruit")
+
+(jdbc/query pooled-db
+            ["select name, cost from fruit where appearance = ?" "rosy"])
+
+(defn select-col-from-table-new
+  "return specific column from table"
+  [db-spec table-name col-name]
+  (jdbc/with-db-connection [t-con db-spec]
+                           (println (jdbc/db-connection t-con))
+                           (jdbc/query t-con [(str "select " col-name " from " table-name)])))
+
+
+
+(select-col-from-table-new pooled-db "fruit" "name")
+(def a (select-col-from-table pooled-db "fruit" "name"))
+(def b (select-col-from-table pooled-db "fruit" "cost"))
+
+(jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
+(select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
+
+(select-col-from-table pooled-db "fruit" "cost")
+(jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
+(select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
+
+
+
+(defn update-or-insert!
+  "Updates columns or inserts a new row in the specified table"
+  [db table row where-clause]
+  (jdbc/with-db-transaction [t-con db]
+                         (let [result (jdbc/update! t-con table row where-clause)]
+                           (println t-con)
+                           (println db)
+                           (if (zero? (first result))
+                             (jdbc/insert! t-con table row)
+                             result))))
+
+(update-or-insert! db-spec :fruit
+                   {:name "Cactus" :appearance "Spiky" :cost 2000}
+                   ["name = ?" "Cactus"])
+;; inserts Cactus (assuming none exists)
+;(update-or-insert! mysql-db :fruit
+;                   {:name "Cactus" :appearance "Spiky" :cost 2500}
+;                   ["name = ?" "Cactus"])
+;;; updates the Cactus we just inserted
 
 
 
