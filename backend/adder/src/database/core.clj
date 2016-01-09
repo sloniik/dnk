@@ -39,7 +39,9 @@
 (defn select-all-values-from-table
   "return all values from table "
   [db-spec table-name]
-  (select-col-from-table db-spec table-name "*"))
+  (select-col-from-table db-spec
+                         table-name
+                         "*"))
 
 (defn select-col-from-table-by-field
   "return specific column from table where field-name = field-val"
@@ -50,13 +52,18 @@
 (defn select-all-values-from-table-by-field
   "return all values from specified table with col-id-name and id-value"
   [db-spec table-name field-name field-val]
-  (select-col-from-table-by-field db-spec table-name "*" field-name field-val))
+  (select-col-from-table-by-field db-spec
+                                  table-name
+                                  "*"
+                                  field-name
+                                  field-val))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (def user-table "Users")
-(def user-salt-col "Salt")
+(def user-email-col "Email")
 (def salt-key :salt)
+(def email-key :email)
 (def user-pass-col "PasswordHash")
 (def pass-key :passwordhash)
 (def user-id-col "idUser")
@@ -64,77 +71,114 @@
 
 (defn get-all-users
   "List of all users"
-  []
+  [db-spec]
   (select-all-values-from-table db-spec user-table))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
   "Get user by user-id"
-  [user-id]
-  (select-all-values-from-table-by-field db-spec user-table user-id-col user-id))
+  [db-spec user-id]
+  (select-all-values-from-table-by-field db-spec
+                                         user-table
+                                         user-id-col
+                                         user-id))
 
 ;;Получем пользователя по логину
 (defn get-user-info-by-login
   "Get user by login"
-  [login]
-  (select-all-values-from-table-by-field db-spec user-table user-login-col login))
+  [db-spec login]
+  (select-all-values-from-table-by-field db-spec
+                                         user-table
+                                         user-login-col
+                                         login))
 
 ;;Общая функция информации по пользователю  пользователя
 (defn get-user-info
   "Get user salt"
-  [id type]
+  [db-spec id type]
   (if (= type :login)
-    (get-user-info-by-login id)
-    (get-user-info-by-id id)))
+    (get-user-info-by-login db-spec id)
+    (get-user-info-by-id db-spec id)))
 
 (defn get-user-salt
   "Get user salt"
-  [id id-type]
-  (let [user-info (get-user-info id id-type)]
+  [db-spec id id-type]
+  (let [user-info (get-user-info db-spec
+                                 id
+                                 id-type)]
     (salt-key user-info)))
 
 (defn get-user-pass
   "get user password hash"
-  [id id-type]
-  (let [user-info (get-user-info id id-type)]
+  [db-spec id id-type]
+  (let [user-info (get-user-info db-spec
+                                 id
+                                 id-type)]
     (pass-key user-info)))
 
 ;;Получаем значения полей пользователя (кроме password и salt)
 (defn get-user-safe-info
   "Get user by type key (id or login)"
-  [id id-type]
-  (let [user-info (get-user-info id id-type)]
-    (dissoc (dissoc user-info salt-key) pass-key)))
+  [db-spec id id-type]
+  (let [user-info (get-user-info db-spec
+                                 id
+                                 id-type)]
+    (dissoc
+      (dissoc user-info salt-key)
+      pass-key)))
 
 (def get-media-types
   "Get all types of media available"
-  [])
+  [db-spec])
 
 (defn get-user-media
   "Gets mediafiles of certaion type created by user"
-  [user-id media-type])
+  [db-spec user-id id-type media-type])
 
 (defn get-all-user-sessions
   "Gets all sessions, made by user"
-  [user-id])
+  [db-spec user-id]
+  (select-all-values-from-table-by-field db-spec
+                                         user-table
+                                         user-login-col
+                                         user-id))
 
 (defn get-current-user-session
   "Gets current session by certain user"
-  [user-id])
+  [db-spec user-id])
 
 ;;Проверяем, что данный логин еще не занят
 (defn login-available?
   "Check whether login available"
-  [login])
+  [db-spec login]
+  (let [user-info (get-user-safe-info db-spec
+                                      login
+                                      :login)]
+    (if (nil? user-info)
+      true
+      false)))
 
 (defn email-registered?
   "Check whether email is already registered"
-  [email])
+  [db-spec email]
+  (let [user-info (select-col-from-table-by-field db-spec
+                                                  user-table
+                                                  user-email-col
+                                                  user-email-col
+                                                  email)]
+    (if (nil? user-info)
+      true
+      false)))
 
 ;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
 (defn password-match?
   "Check if hashed password in database matches calculated hash"
-  [password-hash])
+  [db-spec id id-type password-hash]
+  (if (= password-hash (get-user-pass db-spec
+                                      id
+                                      id-type))
+    true
+    false))
 
 ;;======================== Game Get Functions =====================================
 
