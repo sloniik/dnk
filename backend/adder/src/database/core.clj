@@ -60,14 +60,14 @@
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
-(def user-table "Users")
-(def user-email-col "Email")
+(def user-table "users")
+(def user-email-col "email")
 (def salt-key :salt)
 (def email-key :email)
-(def user-pass-col "PasswordHash")
-(def pass-key :passwordhash)
-(def user-id-col "idUser")
-(def user-login-col "UserName")
+(def user-pass-col "password_hash")
+(def pass-key :password-hash)
+(def user-id-col "id_user")
+(def user-login-col "user_name")
 
 (defn get-all-users
   "List of all users"
@@ -182,17 +182,17 @@
 
 ;;======================== Game Get Functions =====================================
 
-(def game-table "Game")
-(def deleted?-field "isDeleted")
-(def private?-field "isPrivate")
-(def game-type-table "GameType")
-(def game-variant-table "GameVariant")
-(def game-media-table "GameMedia")
-(def id-game-field "idGame")
-(def id-game-type-filed "idGameType")
-(def id-game-variant-field "idGameVariant")
-(def id-author-field "idAuthor")
-(def id-original-field "idOriginal")
+(def game-table "game")
+(def deleted?-field "is_deleted")
+(def private?-field "is_private")
+(def game-type-table "game_type")
+(def game-variant-table "game_variant")
+(def game-media-table "game_media")
+(def id-game-field "id_game")
+(def id-game-type-filed "id_game_type")
+(def id-game-variant-field "id_game_variant")
+(def id-author-field "id_author")
+(def id-original-field "id_original")
 
 ;;Получаем список всех игр
 (defn get-all-games
@@ -206,7 +206,7 @@
 (def get-all-active-games
   "Get collection of all games that are currently active"
   [db-spec]
-  (select-all-values-from-table-by-field db_spec
+  (select-all-values-from-table-by-field db-spec
                                          game-table
                                          deleted?-field
                                          false))
@@ -216,7 +216,7 @@
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (select-all-values-from-table-by-field db_spec
+  (select-all-values-from-table-by-field db-spec
                                          game-table
                                          private?-field
                                          false))
@@ -231,7 +231,7 @@
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
   [db-spec id-game-type]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-variant-table
                                              id-game-type-filed
                                              id-game-type))
@@ -240,7 +240,7 @@
 (defn get-games-by-variant
   "Get collection of games by variant"
   [db-spec id-game-variant]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-table
                                              id-game-variant-field
                                              id-game-variant))
@@ -250,17 +250,14 @@
 (defn get-new-games
   "Get collection of n newest games"
   [db-spec number]
-      (select-all-values-from-table-by-field db_spec
-                                             game-table
-                                             id-game-variant-field
-                                             id-game-variant))
+      )
 
 
 ;;Получаем список игр конкретного автора
 (defn get-games-by-autor
   "Get collection of games by author"
   [db-spec id-author]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-table
                                              id-author-field
                                              id-author))
@@ -270,7 +267,7 @@
 (defn get-all-original-games
   "Get all games that are not forks"
   [db-spec]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-table
                                              id-original-field
                                              nil))
@@ -279,7 +276,7 @@
 (defn get-game-forks
   "Get all forks of a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-table
                                              id-original-field
                                              id-game))
@@ -287,8 +284,8 @@
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
   "Get all media for a certain game"
-  [db-spec game-id]
-      (select-all-values-from-table-by-field db_spec
+  [db-spec id-game]
+      (select-all-values-from-table-by-field db-spec
                                              game-table
                                              id-original-field
                                              id-game))
@@ -298,7 +295,7 @@
 (defn get-game-users
   "Get all users for a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-media-table
                                              id-game-field
                                              id-game))
@@ -306,7 +303,7 @@
 (defn get-game-by-id
   "Get game data by it's id"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db_spec
+      (select-all-values-from-table-by-field db-spec
                                              game-table
                                              id-game-field
                                              id-game))
@@ -359,8 +356,6 @@
 ;                   {:name "Cactus" :appearance "Spiky" :cost 2500}
 ;                   ["name = ?" "Cactus"])
 ;;; updates the Cactus we just inserted
-
-
 
 ;; ==== TESTs ====
 (select-all-values-from-table pooled-db "fruit")
