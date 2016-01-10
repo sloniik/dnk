@@ -10,9 +10,9 @@
 
 (def db-spec {:classname   "com.mysql.jdbc.Driver"
               :subprotocol "mysql"
-              :subname     "//127.0.0.1:3306/clojure_test"
-              :user        "clojure_test"
-              :password    "clojure_test"})
+              :subname     "//127.0.0.1:3306/dnk_test"
+              :user        "dnk_test"
+              :password    "dnk_test"})
 
 ;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
 (defn pool
@@ -33,25 +33,39 @@
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col-from-table
   "return specific column from table"
-  [db-spec table-name col-name]
+  [db-spec
+   table-name
+   col-name]
+
     (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
 
 (defn select-all-values-from-table
   "return all values from table "
-  [db-spec table-name]
+  [db-spec
+   table-name]
+
   (select-col-from-table db-spec
                          table-name
                          "*"))
 
 (defn select-col-from-table-by-field
   "return specific column from table where field-name = field-val"
-  [db-spec table-name col-name field-name field-val]
+  [db-spec
+   table-name
+   col-name
+   field-name
+   field-val]
+
   (jdbc/query db-spec
               [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
 
 (defn select-all-values-from-table-by-field
   "return all values from specified table with col-id-name and id-value"
-  [db-spec table-name field-name field-val]
+  [db-spec
+   table-name
+   field-name
+   field-val]
+
   (select-col-from-table-by-field db-spec
                                   table-name
                                   "*"
@@ -131,9 +145,13 @@
   "Get all types of media available"
   [db-spec])
 
+;TODO: реализовать функцию get-user-media
 (defn get-user-media
   "Gets mediafiles of certaion type created by user"
-  [db-spec user-id id-type media-type])
+  [db-spec
+   user-id
+   id-type
+   media-type])
 
 (defn get-all-user-sessions
   "Gets all sessions, made by user"
@@ -143,14 +161,18 @@
                                          user-login-col
                                          user-id))
 
+;TODO: реализовать функцию
 (defn get-current-user-session
   "Gets current session by certain user"
-  [db-spec user-id])
+  [db-spec
+   user-id]
+  )
 
 ;;Проверяем, что данный логин еще не занят
 (defn login-available?
   "Check whether login available"
-  [db-spec login]
+  [db-spec
+   login]
   (let [user-info (get-user-safe-info db-spec
                                       login
                                       :login)]
@@ -160,7 +182,8 @@
 
 (defn email-registered?
   "Check whether email is already registered"
-  [db-spec email]
+  [db-spec
+   email]
   (let [user-info (select-col-from-table-by-field db-spec
                                                   user-table
                                                   user-email-col
@@ -173,12 +196,41 @@
 ;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
 (defn password-match?
   "Check if hashed password in database matches calculated hash"
-  [db-spec id id-type password-hash]
+  [db-spec
+   id-user
+   id-type
+   password-hash]
   (if (= password-hash (get-user-pass db-spec
-                                      id
+                                      id-user
                                       id-type))
     true
     false))
+
+;TODO: реализовать функцию create-user
+;;Создает нового пользователя
+(defn create-user
+  "Create new user"
+  [db-spec
+   ...]
+  )
+
+;TODO реализовать функцию update-user-profile
+;;Меняет профиль пользователя
+(defn update-user-profile
+  "Updates user profile"
+  [db-spec
+   id-user
+   ...]
+  )
+
+;;С
+(defn update-user-token
+  [db-spec
+   id-user
+   token]
+  )
+
+
 
 ;;======================== Game Get Functions =====================================
 
