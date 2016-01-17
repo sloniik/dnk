@@ -17,7 +17,7 @@
               :subprotocol "mysql"
               :subname     "//127.0.0.1:3306/dnk_test"
               :user        "dnk_test"
-              :password    "dnk_test"})
+              :password    "8641"})
 
 ;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
 (defn pool
@@ -96,13 +96,15 @@
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (def user-table "users")
+(def user-session-table "user_session")
 (def user-email-col "email")
-(def salt-key :salt)
-(def email-key :email)
 (def user-pass-col "password_hash")
-(def pass-key :password-hash)
 (def user-id-col "id_user")
 (def user-login-col "user_name")
+(def user-id-key :id_user)
+(def salt-key :salt)
+(def email-key :email)
+(def pass-key :password-hash)
 
 (defn get-all-users
   "List of all users"
@@ -227,12 +229,12 @@
     true
     false))
 
-;TODO: реализовать функцию create-user
 ;;Создает нового пользователя
 (defn create-user
   "Create new user"
   [db-spec
-   ...]
+   user-map]
+  (insert-data db-spec user-table user-map)
   )
 
 ;TODO реализовать функцию update-user-profile
@@ -241,7 +243,7 @@
   "Updates user profile"
   [db-spec
    id-user
-   ...]
+   profile-map]
   )
 
 ;;TODO реализовать функцию update-user-token
@@ -253,11 +255,12 @@
    token]
   )
 
-;;TODO реализовать функцию create-user-session
 (defn create-user-session
   "Creates new user session"
   [db-spec
    id-user]
+  (let [user-map {user-id-key id-user}])
+  (insert-data db-spec user-session-table user-map)
   )
 
 ;TODO: реализовать функцию deactivate-user
