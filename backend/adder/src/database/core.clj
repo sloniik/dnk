@@ -82,7 +82,11 @@
   [db-spec table-name-key update-record-map col-id col-val]
   (jdbc/update! db-spec table-name-key
                 update-record-map
-                [(str col-id " = ? " col-val)]))
+ls                [(str col-id " = ? ") col-val]))
+
+(defn get-uuid
+  "return new uuid"
+  [] (str (java.util.UUID/randomUUID)))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
@@ -299,7 +303,7 @@
                                          deleted?-field
                                          false))
 
-;;TODO: понять как передать false - переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
+;;TODO: переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
 ;;Получем список игр с параметром isPrivate = false
 (defn get-all-public-games
   "Get collection of all non-private games"
@@ -349,7 +353,6 @@
                                          id-author-field
                                          id-author))
 
-;TODO: понять, как передается Null как значение поля в БД
 ;;Получаем список игр с idOriginal = null
 (defn get-all-original-games
   "Get all games that are not forks"
@@ -397,19 +400,29 @@
 
 (defn get-random-game
   "Return random game"
-  []
-  )
+  [db-spec]
+  (let [public-games (get-all-public-games db-spec)
+        game-rand-num (rand-int (count public-games))
+        n-games (take game-rand-num public-games)]
+    (last n-games)))
 
 ;;TODO сделать функцию проверки игры на похожесть
 (defn create-game
   "Create new record in GAME table.
   Search for similar game first
-  Return gameID and operation-status"
-  [db-spec game-info])
+  Return gameID and operation-status
+  game info - map"
+  [db-spec game-info]
+  (let [result (insert-data db-spec game-table-key game-info)]
+    if (nil? (:generated_key result))
+    ({error-code CANT-CREATE-GAME-CODE
+      error-desc (str "Can't create game" game-info)})
+    (:generated_key result)))
 
 (defn approve-game
   "Approve game by game-id"
-  [db-spec game-id])
+  [db-spec game-id]
+  )
 
 (defn change-game-info
    "Create new record in GAME table.
@@ -632,9 +645,24 @@
                    {:name "Cactus" :appearance "Spiky" :cost 2000}
                    ["name = ?" "Cactus"])
 
+
+
 (select-all-values-from-table pooled-db "fruit")
 (insert-data pooled-db :fruit
-             {:id_name 1 :name "Cactus" :appearance "Spiky" :cost 2000})
+             {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
+
+(defn update-data2
+  "update string (update-record-map) in the table (table-name-key) where col-name col-val"
+  [db-spec table-name-key update-record-map col-id col-val]
+
+  (jdbc/update! db-spec table-name-key
+                update-record-map
+                [(str col-id " = ? ") col-val]))
+
+
+(update-data2 pooled-db :fruit
+             {:name "Cactus 2000"}
+             "id_name" 1)
 ;; inserts Cactus (assuming none exists)
 ;(update-or-insert! mysql-db :fruit
 ;                   {:name "Cactus" :appearance "Spiky" :cost 2500}
