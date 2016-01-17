@@ -7,11 +7,8 @@
   (some #(= elem %) col))
 
 (defn get-uuid
-  "returns UUID"
-  []
-  (.toString (java.util.UUID/randomUUID)))
-
-
+  "return new uuid"
+  [] (str (java.util.UUID/randomUUID)))
 
 ;
 ;(let [db (myapp.db/connection)]

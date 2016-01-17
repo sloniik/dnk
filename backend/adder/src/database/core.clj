@@ -89,9 +89,10 @@
                 update-record-map
                 [(str col-id " = ? ") col-val]))
 
-(defn get-uuid
-  "return new uuid"
-  [] (str (java.util.UUID/randomUUID)))
+(defn delete-date
+  [db-spec table-name-key col-id col-val]
+  (jdbc/delete! db-spec table-name-key
+                [(str col-id " = ? ") col-val]))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
@@ -259,9 +260,8 @@
   "Creates new user session"
   [db-spec
    id-user]
-  (let [user-map {user-id-key id-user}])
-  (insert-data db-spec user-session-table user-map)
-  )
+  (let [user-map (hash-map user-id-key id-user)]
+    (insert-data db-spec user-session-table user-map)))
 
 ;TODO: реализовать функцию deactivate-user
 ;;Деактивирует пользователя. ставит в таблице Users is_active=false
@@ -644,3 +644,26 @@
 (def aaa (update-data pooled-db :fruit
               {:name "Кактус":appearance "Very Spikey"}
               "id_name" 2))
+
+
+;;======== NEW TESTS =======
+(create-user pooled-db {:user_name   "devPop"
+                         :passw-hash  "12345"
+                         :salt        "54321"
+                         :email       "devPop@test.com"
+                         :dt_created  "2016-01-01"
+                         :is_active   true
+                         :is_banned   false
+                         :is_admin     false})
+
+(create-user pooled-db {:user_name   "devAer"
+                         :passw-hash  "abcde"
+                         :salt        "edcba"
+                         :email       "devArt@test.com"
+                         :dt_created  "2016-01-02"
+                         :is_active   true
+                         :is_banned   false
+                         :is_admin     false})
+
+(delete-data pooled-db :user_name "devPop")
+(delete-data pooled-db :user_name "devArt")
