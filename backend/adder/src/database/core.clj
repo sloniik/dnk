@@ -440,28 +440,6 @@
         n-games (take (rand-int game-number) games)]
     (last n-games)))
 
-;TODO: реализовать функцию  create-game
-;TODO: сделать функцию проверки игры на похожесть
-(defn create-game
-  "Create new record in GAME table.
-  Search for similar game first
-  Return gameID and operation-status"
-  [db-spec game-info])
-
-;TODO: реализовать функцию approve-game
-(defn approve-game
-  "Approve game by game-id"
-  [db-spec game-id])
-
-;TODO: реализовать функцию change-game-info
-(defn change-game-info
-  "Create new record in GAME table.
-  Search for similar game first
-  Return gameID and operation-status"
-  [db-spec game-id game-info])
-
-
-
 ;; ================= ROOM ==================
 
 ;TODO: реализовать функцию create-room
@@ -651,20 +629,4 @@
 (insert-data pooled-db :fruit
              {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
 
-(defn update-data2
-  "update string (update-record-map) in the table (table-name-key) where col-name col-val"
-  [db-spec table-name-key update-record-map col-id col-val]
-
-  (jdbc/update! db-spec table-name-key
-                update-record-map
-                [(str col-id " = ? ") col-val]))
-
-
-(update-data2 pooled-db :fruit
-             {:name "Cactus 2000"}
-             "id_name" 1)
-;; inserts Cactus (assuming none exists)
-;(update-or-insert! mysql-db :fruit
-;                   {:name "Cactus" :appearance "Spiky" :cost 2500}
-;                   ["name = ?" "Cactus"])
-;;; updates the Cactus we just inserted
+;;generated_key
