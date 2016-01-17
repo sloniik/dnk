@@ -72,6 +72,14 @@
                                   field-name
                                   field-val))
 
+(defn insert-data
+  "insert data to table"
+  ([db-spec table-name new-record]
+   (jdbc/insert! db-spec table-name nil new-record))
+  ([db-spec table-name table-fields new-record]
+   (jdbc/insert! db-spec table-name table-fields new-record)))
+
+
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
 (def user-table "users")
@@ -555,8 +563,6 @@
 (select-col-from-table pooled-db "fruit" "cost")
 (jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
 (select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
-
-
 
 (defn update-or-insert!
   "Updates columns or inserts a new row in the specified table"
