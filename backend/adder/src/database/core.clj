@@ -7,6 +7,11 @@
   (:require [clojure.java.jdbc :as jdbc]
             [jdbc.pool.c3p0 :as pool]))
 
+;; ERRORS
+(def err-create-game      {:err-code '0001'
+                           :err-desc "Can't create the following game "})
+(def err-change-game-info {:err-code '0002'
+                           :err-desc "Can't commint the following changes to game-id "})
 
 (def db-spec {:classname   "com.mysql.jdbc.Driver"
               :subprotocol "mysql"
@@ -415,23 +420,26 @@
   [db-spec game-info]
   (let [result (insert-data db-spec game-table-key game-info)]
     if (nil? (:generated_key result))
-    ({error-code CANT-CREATE-GAME-CODE
-      error-desc (str "Can't create game" game-info)})
+    {:error-code (:err-code err-create-game)
+     :error-desc (str (:err-desc err-create-game) game-info)}
     (:generated_key result)))
 
+;;NOT IN TO-DO LIST
 (defn approve-game
   "Approve game by game-id"
-  [db-spec game-id]
-  )
+  [db-spec game-id])
 
-(defn change-game-info
+(defn change-game-info-by-id
    "Create new record in GAME table.
    Search for similar game first
    Return gameID and operation-status"
-   [db-spec game-id game-info])
+  [db-spec game-id game-info]
+  (let [result (update-data db-spec game-table-key game-info id-game-field game-id)]
+    if (nil? (first result))
+    {:error-code (:err-code err-change-game-info)
+     :error-desc (str (:err-desc err-change-game-info) game-id " game-info " game-info)}
+    (first result)))
 
-
-;TODO: реализовать функцию get-random-game
 (defn get-random-game
   "Return random game"
   [db-spec]
@@ -629,4 +637,7 @@
 (insert-data pooled-db :fruit
              {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
 
-;;generated_key
+
+(def aaa (update-data pooled-db :fruit
+              {:name "Кактус":appearance "Very Spikey"}
+              "id_name" 2))
