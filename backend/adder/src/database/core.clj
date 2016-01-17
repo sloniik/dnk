@@ -79,20 +79,20 @@
 
 (defn insert-data
   "insert data (new-record-map) to the table (table-name-key)"
-  [db-spec table-name-key new-record-map]
-  (jdbc/insert! db-spec table-name-key new-record-map))
+  [db-spec table-name new-record-map]
+  (jdbc/insert! db-spec table-name new-record-map))
 
 (defn update-data
   "update string (update-record-map) in the table (table-name-key) where col-name col-val"
-  [db-spec table-name-key update-record-map col-id col-val]
-  (jdbc/update! db-spec table-name-key
+  [db-spec table-name update-record-map cond-col cond-val]
+  (jdbc/update! db-spec table-name
                 update-record-map
-                [(str col-id " = ? ") col-val]))
+                [(str cond-col " = ? ") cond-val]))
 
-(defn delete-date
-  [db-spec table-name-key col-id col-val]
+(defn delete-data
+  [db-spec table-name-key cond-col cond-val]
   (jdbc/delete! db-spec table-name-key
-                [(str col-id " = ? ") col-val]))
+                [(str cond-col " = ? ") cond-val]))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
@@ -106,6 +106,9 @@
 (def salt-key :salt)
 (def email-key :email)
 (def pass-key :password-hash)
+(def token-key :user_token)
+(def active?-key :is_active)
+(def banned?-key :is_banned)
 
 (defn get-all-users
   "List of all users"
@@ -238,23 +241,22 @@
   (insert-data db-spec user-table user-map)
   )
 
-;TODO реализовать функцию update-user-profile
 ;;Меняет профиль пользователя
 (defn update-user-profile
   "Updates user profile"
   [db-spec
    id-user
    profile-map]
+  (update-data db-spec user-table profile-map user-id-col id-user)
   )
 
-;;TODO реализовать функцию update-user-token
 ;;Обновляем токен пользователя
 (defn update-user-token
   "Updates token in table Users"
   [db-spec
    id-user
    token]
-  )
+  (update-data db-spec user-table (hash-map [token-key token]) user-id-col id-user))
 
 (defn create-user-session
   "Creates new user session"
@@ -263,20 +265,19 @@
   (let [user-map (hash-map user-id-key id-user)]
     (insert-data db-spec user-session-table user-map)))
 
-;TODO: реализовать функцию deactivate-user
 ;;Деактивирует пользователя. ставит в таблице Users is_active=false
 (defn deactivate-user
   "Deactivates user (updating record in table Users"
   [db-spec
-   id-user])
+   id-user]
+  (update-data db-spec user-table (hash-map [active?-key false]) user-id-col id-user))
 
-;TODO: реализовать функцию ban-user
 ;;Банит пользователя, запрещая ему активность на сайте
 (defn ban-user
   "Bans user blocking his activity"
   [db-spec
    id-user]
-  )
+  (update-data db-spec user-table (hash-map [banned?-key false]) user-id-col id-user))
 
 
 ;;======================== Game  Functions =====================================
@@ -458,7 +459,8 @@
 (defn create-room
   "Creates room for a certain game"
   [db-spec
-   ...]
+   room-map]
+
   )
 
 
