@@ -286,7 +286,7 @@
                                          deleted?-field
                                          false))
 
-;;TODO: понять как передать false
+;;TODO: понять как передать false - переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
 ;;Получем список игр с параметром isPrivate = false
 (defn get-all-public-games
   "Get collection of all non-private games"
@@ -306,19 +306,19 @@
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
   [db-spec id-game-type]
-      (select-all-values-from-table-by-field db-spec
-                                             game-variant-table
-                                             id-game-type-filed
-                                             id-game-type))
+  (select-all-values-from-table-by-field db-spec
+                                         game-variant-table
+                                         id-game-type-filed
+                                         id-game-type))
 
 ;;Получаем список игр определенного типа
 (defn get-games-by-variant
   "Get collection of games by variant"
   [db-spec id-game-variant]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table
-                                             id-game-variant-field
-                                             id-game-variant))
+  (select-all-values-from-table-by-field db-spec
+                                         game-table
+                                         id-game-variant-field
+                                         id-game-variant))
 
 ;TODO: пока не знаю как писать
 ;;Получаем несколько новых игр
@@ -328,23 +328,23 @@
 
 
 ;;Получаем список игр конкретного автора
-(defn get-games-by-autor
+(defn get-games-by-author
   "Get collection of games by author"
   [db-spec id-author]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table
-                                             id-author-field
-                                             id-author))
+  (select-all-values-from-table-by-field db-spec
+                                         game-table
+                                         id-author-field
+                                         id-author))
 
 ;TODO: понять, как передается Null как значение поля в БД
 ;;Получаем список игр с idOriginal = null
 (defn get-all-original-games
   "Get all games that are not forks"
   [db-spec]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table
-                                             id-original-field
-                                             nil))
+  (select-all-values-from-table-by-field db-spec
+                                         game-table
+                                         id-original-field
+                                         nil))
 
 ;;Получаем список форков игры
 (defn get-game-forks
@@ -369,18 +369,41 @@
 (defn get-game-users
   "Get all users for a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db-spec
-                                             game-media-table
-                                             id-game-field
-                                             id-game))
+  (select-all-values-from-table-by-field db-spec
+                                         game-media-table
+                                         id-game-field
+                                         id-game))
 
 (defn get-game-by-id
   "Get game data by it's id"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table
-                                             id-game-field
-                                             id-game))
+  (select-all-values-from-table-by-field db-spec
+                                         game-table
+                                         id-game-field
+                                         id-game))
+
+(defn get-random-game
+  "Return random game"
+  []
+  )
+
+;;TODO сделать функцию проверки игры на похожесть
+(defn create-game
+  "Create new record in GAME table.
+  Search for similar game first
+  Return gameID and operation-status"
+  [db-spec game-info])
+
+(defn approve-game
+  "Approve game by game-id"
+  [db-spec game-id])
+
+(defn change-game-info
+   "Create new record in GAME table.
+   Search for similar game first
+   Return gameID and operation-status"
+   [db-spec game-id game-info])
+
 
 ;TODO: реализовать функцию get-random-game
 (defn get-random-game
