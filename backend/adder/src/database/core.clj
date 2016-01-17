@@ -82,7 +82,7 @@
   [db-spec table-name-key update-record-map col-id col-val]
   (jdbc/update! db-spec table-name-key
                 update-record-map
-ls                [(str col-id " = ? ") col-val]))
+                [(str col-id " = ? ") col-val]))
 
 (defn get-uuid
   "return new uuid"
