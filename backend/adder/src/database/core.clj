@@ -74,8 +74,8 @@
 
 (defn insert-data
   "insert data to table"
-  [db-spec table-name new-record-map]
-  (jdbc/insert! db-spec table-name new-record-map))
+  [db-spec table-name-key new-record-map]
+  (jdbc/insert! db-spec table-name-key new-record-map))
 
 
 ;; ================ User functions ===================
