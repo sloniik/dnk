@@ -223,13 +223,36 @@
    ...]
   )
 
-;;С
+;;TODO реализовать функцию update-user-token
+;;Обновляем токен пользователя
 (defn update-user-token
+  "Updates token in table Users"
   [db-spec
    id-user
    token]
   )
 
+;;TODO реализовать функцию create-user-session
+(defn create-user-session
+  "Creates new user session"
+  [db-spec
+   id-user]
+  )
+
+;TODO: реализовать функцию deactivate-user
+;;Деактивирует пользователя. ставит в таблице Users is_active=false
+(defn deactivate-user
+  "Deactivates user (updating record in table Users"
+  [db-spec
+   id-user])
+
+;TODO: реализовать функцию ban-user
+;;Банит пользователя, запрещая ему активность на сайте
+(defn ban-user
+  "Bans user blocking his activity"
+  [db-spec
+   id-user]
+  )
 
 
 ;;======================== Game Get Functions =====================================
@@ -360,6 +383,101 @@
                                              id-game-field
                                              id-game))
 
+
+
+;; ================= ROOM ==================
+
+;TODO: реализовать функцию create-room
+;;Создает новую комнату
+(defn create-room
+  "Creates room for a certain game"
+  [db-spec
+   ...]
+  )
+
+
+;TODO: реализовать фунукцию kill-room
+;;Удаляет комнату (ставит is-active = false)
+(defn kill-room
+  "Kills certain rooom"
+  [db-spec id-room]
+  )
+
+;TODO: релизовать функцию get-room-list
+;;Получает список комнат конретной игры
+(defn get-room-list
+  "Get room list of certain game"
+  [db-spec id-game]
+  )
+
+;TODO: реализовать функцию get-users-in-room
+;;Получает список пользователей в конкретной комнате
+(defn get-users-in-room
+  "Gets list of users in certain room"
+  [db-spec id-room]
+  )
+
+;TODO: реализовать функцию get-chat
+;;Получает чат комнаты
+(defn get-chat
+  "Gets chat of a certain room"
+  [db-spec id-room]
+  )
+
+;TODO: реализовать функцию enter-room
+;;Добавляет пользователя в комнату
+(defn enter-room
+  "Adds user to a room"
+  [db-spec id-user id-room]
+  )
+
+;TODO: реализовать функцию leave-room
+;;Убирает пользователя из комнаты (задавая dt-left)
+(defn leave-room
+  "Removes user from a room (settind dt-left)"
+  [db-spec id-user id-room]
+  )
+
+;TODO: реализовать функцию send-message
+;;Отправляет сообщение в чат
+(defn send-message
+  "Sends message to a chat"
+  [db-spec id-user id-chat]
+  )
+
+;TODO: реализовать функцию get-new-messages
+;;Получает список из n последних сообщений
+(defn get-last-messages
+  "Get list of n last messages in chat"
+  [db-spec id-chat n]
+  )
+
+;TODO: реализовать фукнцию add-question
+;;Создает новый вопрос
+(defn add-question
+  "Adds question to a certain room from a certain user"
+  [db-spec id-room id-user question]
+  )
+
+;TODO: реализовать функцию delete-question
+;;Удаляет вопрос
+(defn delete-question
+  "Removes question"
+  [db-spec id-question]
+  )
+
+;TODO: реализовать функцию answer-question
+;;Добавляет ответ на вопрос
+(defn answer-question
+  "Asnwers a question"
+  [db-spec id-question  answer]
+  )
+
+;TODO: реализовать функцию delete-answer
+;;Удаляет ответ на вопрос
+(defn delete-answer
+  "Removes answer"
+  [db-spec id-question])
 
 ;; ==== TESTs ====
 (select-all-values-from-table pooled-db "fruit")
