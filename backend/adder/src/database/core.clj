@@ -73,10 +73,16 @@
                                   field-val))
 
 (defn insert-data
-  "insert data to table"
+  "insert data (new-record-map) to the table (table-name-key)"
   [db-spec table-name-key new-record-map]
   (jdbc/insert! db-spec table-name-key new-record-map))
 
+(defn update-data
+  "update string (update-record-map) in the table (table-name-key) where col-name col-val"
+  [db-spec table-name-key update-record-map col-id col-val]
+  (jdbc/update! db-spec table-name-key
+                update-record-map
+                [(str col-id " = ? " col-val)]))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
@@ -263,6 +269,7 @@
 
 ;;======================== Game  Functions =====================================
 
+(def game-table-key :game)
 (def game-table "game")
 (def deleted?-field "is_deleted")
 (def private?-field "is_private")
@@ -280,7 +287,7 @@
   "Get collection of all games ever created"
   [db-spec]
   (select-all-values-from-table db-spec
-                                game-table))
+                                game-table-key))
 
 ;;TODO: понять как передать false
 ;;Получаем список игр с параметром isDeleted = false
@@ -288,7 +295,7 @@
   "Get collection of all games that are currently active"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
-                                         game-table
+                                         game-table-key
                                          deleted?-field
                                          false))
 
@@ -298,7 +305,7 @@
   "Get collection of all non-private games"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
-                                         game-table
+                                         game-table-key
                                          private?-field
                                          false))
 
@@ -322,7 +329,7 @@
   "Get collection of games by variant"
   [db-spec id-game-variant]
   (select-all-values-from-table-by-field db-spec
-                                         game-table
+                                         game-table-key
                                          id-game-variant-field
                                          id-game-variant))
 
@@ -338,7 +345,7 @@
   "Get collection of games by author"
   [db-spec id-author]
   (select-all-values-from-table-by-field db-spec
-                                         game-table
+                                         game-table-key
                                          id-author-field
                                          id-author))
 
@@ -348,7 +355,7 @@
   "Get all games that are not forks"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
-                                         game-table
+                                         game-table-key
                                          id-original-field
                                          nil))
 
@@ -357,7 +364,7 @@
   "Get all forks of a certain game"
   [db-spec id-game]
       (select-all-values-from-table-by-field db-spec
-                                             game-table
+                                             game-table-key
                                              id-original-field
                                              id-game))
 
@@ -366,7 +373,7 @@
   "Get all media for a certain game"
   [db-spec id-game]
       (select-all-values-from-table-by-field db-spec
-                                             game-table
+                                             game-table-key
                                              id-original-field
                                              id-game))
 
@@ -384,7 +391,7 @@
   "Get game data by it's id"
   [db-spec id-game]
   (select-all-values-from-table-by-field db-spec
-                                         game-table
+                                         game-table-key
                                          id-game-field
                                          id-game))
 
@@ -624,6 +631,10 @@
 (update-or-insert! db-spec :fruit
                    {:name "Cactus" :appearance "Spiky" :cost 2000}
                    ["name = ?" "Cactus"])
+
+(select-all-values-from-table pooled-db "fruit")
+(insert-data pooled-db :fruit
+             {:id_name 1 :name "Cactus" :appearance "Spiky" :cost 2000})
 ;; inserts Cactus (assuming none exists)
 ;(update-or-insert! mysql-db :fruit
 ;                   {:name "Cactus" :appearance "Spiky" :cost 2500}
