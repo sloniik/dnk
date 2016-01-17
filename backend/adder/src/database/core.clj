@@ -255,7 +255,7 @@
   )
 
 
-;;======================== Game Get Functions =====================================
+;;======================== Game  Functions =====================================
 
 (def game-table "game")
 (def deleted?-field "is_deleted")
@@ -324,8 +324,7 @@
 ;;Получаем несколько новых игр
 (defn get-new-games
   "Get collection of n newest games"
-  [db-spec number]
-      )
+  [db-spec number])
 
 
 ;;Получаем список игр конкретного автора
@@ -383,7 +382,34 @@
                                              id-game-field
                                              id-game))
 
+;TODO: реализовать функцию get-random-game
+(defn get-random-game
+  "Return random game"
+  [db-spec]
+  (let [games (get-all-public-games db-spec)
+        game-number (count games)
+        n-games (take (rand-int game-number) games)]
+    (last n-games)))
 
+;TODO: реализовать функцию  create-game
+;TODO: сделать функцию проверки игры на похожесть
+(defn create-game
+  "Create new record in GAME table.
+  Search for similar game first
+  Return gameID and operation-status"
+  [db-spec game-info])
+
+;TODO: реализовать функцию approve-game
+(defn approve-game
+  "Approve game by game-id"
+  [db-spec game-id])
+
+;TODO: реализовать функцию change-game-info
+(defn change-game-info
+  "Create new record in GAME table.
+  Search for similar game first
+  Return gameID and operation-status"
+  [db-spec game-id game-info])
 
 ;; ================= ROOM ==================
 
