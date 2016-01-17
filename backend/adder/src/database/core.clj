@@ -434,6 +434,8 @@
   Return gameID and operation-status"
   [db-spec game-id game-info])
 
+
+
 ;; ================= ROOM ==================
 
 ;TODO: реализовать функцию create-room
