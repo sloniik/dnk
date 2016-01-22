@@ -40,23 +40,23 @@
 (jdbc/query p-db
             ["select name, cost from fruit where appearance = ?" "rosy"])
 
-(db/select-col-from-table p-db "fruit" "cost")
+(db/select-col p-db "fruit" "cost")
 (jdbc/query p-db [(str "select name from fruit where cost = ?" ) 24])
-(db/select-col-from-table-by-field p-db "fruit" "name" "cost" 24)
+(db/select-col-by-field p-db "fruit" "name" "cost" 24)
 
 
-(db/select-all-values-from-table p-db "fruit")
+(db/select-all p-db "fruit")
 (db/insert-data p-db :fruit
              {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
 
 
 ;; ==== TESTs ====
-(db/select-all-values-from-table p-db "fruit")
+(db/select-all p-db "fruit")
 
-(db/select-col-from-table-new p-db "fruit" "name")
+(db/select-col-new p-db "fruit" "name")
 
 (jdbc/query p-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
 
-(db/select-col-from-table p-db "fruit" "cost")
+(db/select-col p-db "fruit" "cost")
 (jdbc/query p-db [(str "select name from fruit where cost = ?" ) 24])
-(db/select-col-from-table-by-field p-db "fruit" "name" "cost" 24)
+(db/select-col-by-field p-db "fruit" "name" "cost" 24)

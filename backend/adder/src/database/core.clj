@@ -34,18 +34,18 @@
 (def pooled-db  (pool db-spec))
 
 ;; === MAIN_DB_FUNCTIONs ===
-(defn select-col-from-table
+(defn select-col
   "return specific column from table"
   [db-spec table-name col-name]
     (jdbc/query db-spec [(str "select " (name col-name)
                               "  from " (name table-name))]))
 
-(defn select-all-values-from-table
+(defn select-all
   "return all values from table "
   [db-spec table-name]
-  (select-col-from-table db-spec (name table-name) "*"))
+  (select-col db-spec (name table-name) "*"))
 
-(defn select-col-from-table-by-field
+(defn select-col-by-field
   "return specific column from table where field-name = field-val"
   [db-spec table-name
    col-name
@@ -56,13 +56,13 @@
                     " from " (name table-name)
                     " where " (name field-name) " = ?") field-val]))
 
-(defn select-all-values-from-table-by-field
+(defn select-all-by-field
   "return all values from specified table with col-id-name and id-value"
   [db-spec
    table-name
    field-name
    field-val]
-  (select-col-from-table-by-field db-spec (name table-name) "*" (name field-name) field-val))
+  (select-col-by-field db-spec (name table-name) "*" (name field-name) field-val))
 
 (defn select-cols-multi-cond
   "on input:
@@ -117,20 +117,20 @@
 (defn get-all-users
   "List of all users"
   [db-spec]
-  (select-all-values-from-table db-spec :users))
+  (select-all db-spec :users))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
   "Get user by user-id"
   [db-spec user-id]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :users :id_user user-id))
 
 ;;Получем пользователя по логину
 (defn get-user-info-by-login
   "Get user by login"
   [db-spec login]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :user :user_name login))
 
 ;;Общая функция информации по пользователю  пользователя
@@ -177,7 +177,7 @@
 (defn get-all-user-sessions
   "Gets all sessions, made by user"
   [db-spec user-id]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :users :user_name user-id))
 
 ;TODO: реализовать функцию
@@ -202,7 +202,7 @@
   "Check whether email is already registered"
   [db-spec
    email]
-  (let [user-info (select-col-from-table-by-field
+  (let [user-info (select-col-by-field
                     db-spec :users :email :email email)]
     (if (nil? user-info)
       true
@@ -292,7 +292,7 @@
 (defn get-all-games
   "Get collection of all games ever created"
   [db-spec]
-  (select-all-values-from-table
+  (select-all
     db-spec :game))
 
 
@@ -300,7 +300,7 @@
 (defn get-all-active-games
   "Get collection of all games that are currently active"
   [db-spec]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game :is_deleted false))
 
 ;;TODO: переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
@@ -308,27 +308,27 @@
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game :is_private false))
 
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
   [db-spec]
-  (select-all-values-from-table
+  (select-all
     db-spec :game_type))
 
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
   [db-spec id-game-type]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game_variant :id_game_type id-game-type))
 
 ;;Получаем список игр определенного типа
 (defn get-games-by-variant
   "Get collection of games by variant"
   [db-spec id-game-variant]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game :id_game_variant id-game-variant))
 
 ;TODO: пока не знаю как писать
@@ -342,41 +342,41 @@
 (defn get-games-by-author
   "Get collection of games by author"
   [db-spec id-author]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game :id_author id-author))
 
 ;;Получаем список игр с idOriginal = null
 (defn get-all-original-games
   "Get all games that are not forks"
   [db-spec]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game :id_original nil))
 
 ;;Получаем список форков игры
 (defn get-game-forks
   "Get all forks of a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field
+      (select-all-by-field
         db-spec :game :id_original id-game))
 
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
   "Get all media for a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field
+      (select-all-by-field
         db-spec :game_media :id_game id-game))
 
 ;;Получаем набор пользователей по данной игре
 (defn get-game-users
   "Get all users for a certain game"
   [db-spec id-game]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game_users :id_game id-game))
 
 (defn get-game-by-id
   "Get game data by it's id"
   [db-spec id-game]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :game :id_game id-game))
 
 (defn get-random-game
@@ -461,7 +461,7 @@
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :room :id_game id-game))
 
 ;TODO: добавить второе условие (dt_left = nil)
@@ -469,7 +469,7 @@
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :room_users :id_room id-room))
 
 ;TODO: добавить второе услвоие (dt_closed = nil)
@@ -477,7 +477,7 @@
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
-  (select-all-values-from-table-by-field
+  (select-all-by-field
     db-spec :chat :id_room id-room))
 
 ;;Добавляет пользователя в комнату
@@ -512,7 +512,7 @@
 (defn get-last-messages
   "Get list of n last messages in chat"
   [db-spec id-chat n]
-  (select-all-values-from-table-by-field db-spec :chat :id_chat id-chat)
+  (select-all-by-field db-spec :chat :id_chat id-chat)
   )
 
 ;;Создает новый вопрос
