@@ -36,13 +36,16 @@
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col
   "return specific column from table"
-  [db-spec table-name col-name]
+  [db-spec
+   table-name
+   col-name]
     (jdbc/query db-spec [(str "select " (name col-name)
                               "  from " (name table-name))]))
 
 (defn select-all
   "return all values from table "
-  [db-spec table-name]
+  [db-spec
+   table-name]
   (select-col db-spec (name table-name) "*"))
 
 (defn select-col-by-field
@@ -86,17 +89,65 @@
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
- [db-spec table-name new-record-map]
- (jdbc/insert! db-spec (name table-name) new-record-map))
+ [db-spec
+  table-name
+  new-record-map]
+ (jdbc/insert! db-spec
+               (name table-name)
+               new-record-map))
 
 (defn update-data
   "update string (update-record-map) in the table (table-name-key) where col-name col-val"
-  [db-spec table-name update-record-map cond-col cond-val]
-  (jdbc/update! db-spec (name table-name) update-record-map [(str (name cond-col) " = ? ") cond-val]))
+  [db-spec
+   table-name
+   update-record-map
+   cond-col
+   cond-val]
+  (jdbc/update! db-spec
+                (name table-name)
+                update-record-map
+                [(str (name cond-col) " = ? ") cond-val]))
+
+(defn update-data-multi-cond
+  "update string (update-record-map) in the table (table-name-key) where conditions are in map cond-map-array"
+  [db-spec
+   table-name
+   update-record-map
+   cond-map-array]
+  (let [where-col-names   (u/vec-map->vec-by-key cond-map-array :col-name)
+        where-operation   (u/vec-map->vec-by-key cond-map-array :operation)
+        where-col-val     (u/vec-map->vec-by-key cond-map-array :col-val)
+        where-cond        (u/concat-vec->str-vec where-operation where-col-val)
+        w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
+    (jdbc/update! db-spec
+                  (name table-name)
+                  update-record-map
+                  [w-cond])))
 
 (defn delete-data
-  [db-spec table-name cond-col cond-val]
-  (jdbc/delete! db-spec (name table-name) [(str (name cond-col) " = ? ") cond-val]))
+  "delete data from table with some condition"
+  [db-spec
+   table-name
+   cond-col
+   cond-val]
+  (jdbc/delete! db-spec
+                (name table-name)
+                [(str (name cond-col) " = ? ") cond-val]))
+
+(defn delete-data-multi-cond
+  "delete in the table (table-name-key) where conditions are in map cond-map-array"
+  [db-spec
+   table-name
+   cond-map-array]
+  (let [where-col-names   (u/vec-map->vec-by-key cond-map-array :col-name)
+        where-operation   (u/vec-map->vec-by-key cond-map-array :operation)
+        where-col-val     (u/vec-map->vec-by-key cond-map-array :col-val)
+        where-cond        (u/concat-vec->str-vec where-operation where-col-val)
+        w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
+    (jdbc/delete! db-spec
+                  (name table-name)
+                  update-record-map
+                  [w-cond])))
 
 ;; ================ User functions ===================
 (defn get-all-users
@@ -143,9 +194,9 @@
   "Get user by type key (id or login)"
   [db-spec id id-type]
   (let [user-info (get-user-info db-spec id id-type)]
-    (dissoc
-      (dissoc user-info :salt)
-      :password_hash)))
+    (-> user-info
+        (dissoc :salt)
+        (dissoc :password-hash))))
 
 (def get-media-types
   "Get all types of media available"
