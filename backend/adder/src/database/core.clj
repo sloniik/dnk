@@ -25,7 +25,7 @@
               :ssl?        false
               :subname     "//127.0.0.1:3306/dnk_test"
               :user        "dnk_test"
-              :password    "8641"})
+              :password    "dnk_test"})
 
 ;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
 (defn pool
@@ -312,7 +312,7 @@
 
 
 ;;Получаем список игр с параметром isDeleted = false
-(def get-all-active-games
+(defn get-all-active-games
   "Get collection of all games that are currently active"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
@@ -431,10 +431,10 @@
   game info - map"
   [db-spec game-info]
   (let [result (insert-data db-spec game-table-key game-info)]
-    if (nil? (:generated_key result))
+    (if (nil? (:generated_key result))
     {:error-code (:err-code err-create-game)
      :error-desc (str (:err-desc err-create-game) game-info)}
-    (:generated_key result)))
+    (:generated_key result))))
 
 ;;NOT IN TO-DO LIST
 (defn approve-game
@@ -447,10 +447,10 @@
    Return gameID and operation-status"
   [db-spec game-id game-info]
   (let [result (update-data db-spec game-table-key game-info id-game-field game-id)]
-    if (nil? (first result))
+    (if (nil? (first result))
     {:error-code (:err-code err-change-game-info)
      :error-desc (str (:err-desc err-change-game-info) game-id " game-info " game-info)}
-    (first result)))
+    (first result))))
 
 (defn get-random-game
   "Return random game"
@@ -486,9 +486,8 @@
 (defn kill-room
   "Kills certain rooom"
   [db-spec id-room]
-  (let map (hash-map [room-active?-key true]))
-  (update-data db-spec room-table map room-id-col id-room)
-  )
+  (let [map (hash-map room-active?-key true)]
+    (update-data db-spec room-table map room-id-col id-room)))
 
 ;TODO: добавить второе условие (is_active = true)
 ;;Получает список активных комнат конретной игры
@@ -518,20 +517,18 @@
 (defn enter-room
   "Adds user to a room"
   [db-spec id-user id-room]
-  (let map (hash-map [room-id-key id-room
+  (let [map (hash-map room-id-key id-room
                       user-id-key id-user
-                      room-joined-key (now)])
-  (insert-data db-spec room-users-table map)
-  )
+                      room-joined-key (now))]
+    (insert-data db-spec room-users-table map)))
 
 ;TODO: добавить второе усовие для update-data (id_user = id-user)
 ;;Убирает пользователя из комнаты (задавая dt-left)
 (defn leave-room
   "Removes user from a room (settind dt-left)"
   [db-spec id-user id-room]
-  (let map (hash-map [room-left-key (now)]))
-  (update-data db-spec room-users-table map room-id-col id-room)
-  )
+  (let [map (hash-map room-left-key (now))]
+    (update-data db-spec room-users-table map room-id-col id-room)))
 
 ;TODO: реализовать функцию send-message
 ;;Отправляет сообщение в чат
@@ -594,11 +591,11 @@
 (def b (select-col-from-table pooled-db "fruit" "cost"))
 
 (jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
-(select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
+(select-all-values-from-table-by-field db-spec "fruit" "cost" 24)
 
 (select-col-from-table pooled-db "fruit" "cost")
 (jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
-(select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
+(select-col-from-table-by-field pooled-db "fruit" "name" "cost" 24)
 
 (defn update-or-insert!
   "Updates columns or inserts a new row in the specified table"
@@ -635,16 +632,16 @@
 
 
 
-(select-col-from-table-new pooled-db "fruit" "name")
+(select-col-from-table-new db-spec "fruit" "name")
 (def a (select-col-from-table pooled-db "fruit" "name"))
 (def b (select-col-from-table pooled-db "fruit" "cost"))
 
 (jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
-(select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
+(select-all-values-from-table-by-field db-spec "fruit" "cost" 24)
 
 (select-col-from-table pooled-db "fruit" "cost")
 (jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
-(select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
+(select-col-from-table-by-field pooled-db "fruit" "name" "cost" 24)
 
 
 
@@ -682,7 +679,7 @@
                          :email       "devPop@test.com"
                          :dt_created  "2016-01-01"
                          :is_active   true
-                         :is_online   false?
+                         :is_online   false
                          :is_banned   false
                          :is_admin     false})
 
@@ -696,5 +693,5 @@
                          :is_banned   false
                          :is_admin     false})
 
-(delete-data pooled-db :user_name "devPop")
-(delete-data pooled-db :user_name "devArt")
+(delete-data pooled-db user-table "user_name" "devPop")
+(delete-data pooled-db user-table "user_name" "devArt")
