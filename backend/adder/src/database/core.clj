@@ -53,7 +53,7 @@
    field-val]
   (jdbc/query db-spec
               [(str "select " (name col-name)
-                    "  from " (name table-name)
+                    " from " (name table-name)
                     " where " (name field-name) " = ?") field-val]))
 
 (defn select-all-values-from-table-by-field
@@ -80,7 +80,9 @@
         where-cond        (u/concat-vec->str-vec where-operation where-col-val)
         w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
     (jdbc/query db-spec
-                [(str "select " select-col-names " from " table-name "  where " w-cond)])))
+                [(str "select " select-col-names
+                      " from " table-name
+                      " where " w-cond)])))
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
@@ -302,7 +304,6 @@
     db-spec :game :is_deleted false))
 
 ;;TODO: переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
-;;TODO: понять, как получать данные по несколькоим условиям
 ;;Получем список игр с параметром isPrivate = false
 (defn get-all-public-games
   "Get collection of all non-private games"
