@@ -1,7 +1,6 @@
 (ns database.for-test
   (:use database.core as db))
 
-
 ;; ==== backend TESTs ====
 
 (def pooled-db  db/pooled-db)
@@ -61,7 +60,6 @@
 (def a (select-col-from-table pooled-db "fruit" "name"))
 (def b (select-col-from-table pooled-db "fruit" "cost"))
 
-(jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
 (select-all-values-from-table-by-field db-spec "fruit" "cost" 24)
 
 (select-col-from-table pooled-db "fruit" "cost")

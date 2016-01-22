@@ -13,7 +13,6 @@
 
 (defn now [] (.format (SimpleDateFormat. "dd.MM.yyyy HH:mm:ss") (Date.)))
 
-
 ;; ERRORS
 (def err-create-game      {:err-code '0001'
                            :err-desc "Can't create the following game "})
@@ -84,6 +83,14 @@
                                   "*"
                                   field-name
                                   field-val))
+
+(defn select-col-from-table-cond-array
+  "on input - vector of maps: {:col-name :operation :val}"
+  [db-spec table-name col-name cond-array]
+  (jdbc/query db-spec
+              [(str "select " col-name " from" table-name "where " )])
+  )
+
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
@@ -570,3 +577,7 @@
 (defn delete-answer
   "Removes answer"
   [db-spec id-question])
+
+
+(def a ["2000" "1"])
+(jdbc/query db-spec [(str "select " "*" " from " "fruit" " where " "cost" " = ? and id_name = ?") (1 vec-par ) (2 vec-par)])
