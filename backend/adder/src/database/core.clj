@@ -3,9 +3,16 @@
 
 (ns database.core
   (:gen-class)
-  (:import com.mchange.v2.c3p0.ComboPooledDataSource)
+  (:import com.mchange.v2.c3p0.ComboPooledDataSource
+           (java.text SimpleDateFormat)
+           (java.util Date))
   (:require [clojure.java.jdbc :as jdbc]
             [jdbc.pool.c3p0 :as pool]))
+
+;; UTILITY
+
+(defn now [] (.format (SimpleDateFormat. "dd.MM.yyyy HH:mm:ss") (Date.)))
+
 
 ;; ERRORS
 (def err-create-game      {:err-code '0001'
@@ -15,6 +22,7 @@
 
 (def db-spec {:classname   "com.mysql.jdbc.Driver"
               :subprotocol "mysql"
+              :ssl?        false
               :subname     "//127.0.0.1:3306/dnk_test"
               :user        "dnk_test"
               :password    "8641"})
@@ -78,9 +86,9 @@
                                   field-val))
 
 (defn insert-data
-  "insert data (new-record-map) to the table (table-name-key)"
-  [db-spec table-name new-record-map]
-  (jdbc/insert! db-spec table-name new-record-map))
+ "insert data (new-record-map) to the table (table-name-key)"
+ [db-spec table-name new-record-map]
+ (jdbc/insert! db-spec table-name new-record-map))
 
 (defn update-data
   "update string (update-record-map) in the table (table-name-key) where col-name col-val"
@@ -96,19 +104,7 @@
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
-(def user-table "users")
-(def user-session-table "user_session")
-(def user-email-col "email")
-(def user-pass-col "password_hash")
-(def user-id-col "id_user")
-(def user-login-col "user_name")
-(def user-id-key :id_user)
-(def salt-key :salt)
-(def email-key :email)
-(def pass-key :password-hash)
-(def token-key :user_token)
-(def active?-key :is_active)
-(def banned?-key :is_banned)
+z
 
 (defn get-all-users
   "List of all users"
@@ -270,22 +266,22 @@
   "Deactivates user (updating record in table Users"
   [db-spec
    id-user]
-  (update-data db-spec user-table (hash-map [active?-key false]) user-id-col id-user))
+  (update-data db-spec user-table (hash-map [user_active?-key false]) user-id-col id-user))
 
 ;;Банит пользователя, запрещая ему активность на сайте
 (defn ban-user
   "Bans user blocking his activity"
   [db-spec
    id-user]
-  (update-data db-spec user-table (hash-map [banned?-key false]) user-id-col id-user))
+  (update-data db-spec user-table (hash-map [user-banned?-key false]) user-id-col id-user))
 
 
 ;;======================== Game  Functions =====================================
 
 (def game-table-key :game)
 (def game-table "game")
-(def deleted?-field "is_deleted")
-(def private?-field "is_private")
+(def game-deleted?-field "is_deleted")
+(def game-private?-field "is_private")
 (def game-type-table "game_type")
 (def game-variant-table "game_variant")
 (def game-media-table "game_media")
@@ -302,24 +298,25 @@
   (select-all-values-from-table db-spec
                                 game-table-key))
 
-;;TODO: понять как передать false
+
 ;;Получаем список игр с параметром isDeleted = false
 (def get-all-active-games
   "Get collection of all games that are currently active"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
                                          game-table-key
-                                         deleted?-field
+                                         game-deleted?-field
                                          false))
 
 ;;TODO: переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
+;;TODO: понять, как получать данные по несколькоим условиям
 ;;Получем список игр с параметром isPrivate = false
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
                                          game-table-key
-                                         private?-field
+                                         game-private?-field
                                          false))
 
 ;;Получаем список всех типов игр
@@ -389,7 +386,6 @@
                                              id-original-field
                                              id-game))
 
-;;TODO: надо определиться с формой
 ;;Получаем набор пользователей по данной игре
 (defn get-game-users
   "Get all users for a certain game"
@@ -454,55 +450,75 @@
 
 ;; ================= ROOM ==================
 
-;TODO: реализовать функцию create-room
+(def room-table "room")
+(def room-users-table "room_users")
+(def chat-table "chat")
+(def room-active?-key :is_active)
+(def room-id-key :id_room)
+(def chat-id-key :id_chat)
+(def room-joined-key :dt_joined)
+(def room-left-key :dt_left)
+(def room-id-col "id_room")
+
+
+
 ;;Создает новую комнату
 (defn create-room
   "Creates room for a certain game"
   [db-spec
    room-map]
+  (insert-data db-spec room-table room-map)
   )
 
-
-;TODO: реализовать фунукцию kill-room
 ;;Удаляет комнату (ставит is-active = false)
 (defn kill-room
   "Kills certain rooom"
   [db-spec id-room]
+  (let map (hash-map [room-active?-key true]))
+  (update-data db-spec room-table map room-id-col id-room)
   )
 
-;TODO: релизовать функцию get-room-list
-;;Получает список комнат конретной игры
+;TODO: добавить второе условие (is_active = true)
+;;Получает список активных комнат конретной игры
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
+  (select-all-values-from-table-by-field db-spec room-table id-game-field id-game)
   )
 
-;TODO: реализовать функцию get-users-in-room
-;;Получает список пользователей в конкретной комнате
+;TODO: добавить второе условие (dt_left = nil)
+;;Получает текущий список пользователей в конкретной комнате
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
+  (select-all-values-from-table-by-field db-spec room-users-table room-id-col id-room)
   )
 
-;TODO: реализовать функцию get-chat
+;TODO: добавить второе услвоие (dt_closed = nil)
 ;;Получает чат комнаты
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
+  (select-all-values-from-table-by-field db-spec chat-table room-id-col id-room )
   )
 
-;TODO: реализовать функцию enter-room
 ;;Добавляет пользователя в комнату
 (defn enter-room
   "Adds user to a room"
   [db-spec id-user id-room]
+  (let map (hash-map [room-id-key id-room
+                      user-id-key id-user
+                      room-joined-key (now)])
+  (insert-data db-spec room-users-table map)
   )
 
-;TODO: реализовать функцию leave-room
+;TODO: добавить второе усовие для update-data (id_user = id-user)
 ;;Убирает пользователя из комнаты (задавая dt-left)
 (defn leave-room
   "Removes user from a room (settind dt-left)"
   [db-spec id-user id-room]
+  (let map (hash-map [room-left-key (now)]))
+  (update-data db-spec room-users-table map room-id-col id-room)
   )
 
 ;TODO: реализовать функцию send-message
@@ -649,22 +665,24 @@
 
 ;;======== NEW TESTS =======
 (create-user pooled-db {:user_name   "devPop"
-                         :passw-hash  "12345"
+                         :password_hash  "12345"
                          :salt        "54321"
                          :email       "devPop@test.com"
                          :dt_created  "2016-01-01"
+                         :is_online   false
                          :is_active   true
                          :is_banned   false
                          :is_admin     false})
 
 (create-user pooled-db {:user_name   "devAer"
-                         :passw-hash  "abcde"
+                         :password_hash  "abcde"
                          :salt        "edcba"
                          :email       "devArt@test.com"
                          :dt_created  "2016-01-02"
+                         :is_online   false
                          :is_active   true
                          :is_banned   false
                          :is_admin     false})
 
-(delete-data pooled-db :user_name "user_name" "devPop")
-(delete-data pooled-db :user_name "user_name" "devArt")
+(delete-data pooled-db :user_name "devPop")
+(delete-data pooled-db :user_name "devArt")
