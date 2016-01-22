@@ -460,7 +460,6 @@
   "Creates room for a certain game"
   [db-spec
    room-map]
-
   )
 
 
@@ -667,5 +666,5 @@
                          :is_banned   false
                          :is_admin     false})
 
-(delete-data pooled-db :user_name "devPop")
-(delete-data pooled-db :user_name "devArt")
+(delete-data pooled-db :user_name "user_name" "devPop")
+(delete-data pooled-db :user_name "user_name" "devArt")
