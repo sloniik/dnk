@@ -1,7 +1,8 @@
 (ns database.for-test
   (:require [database.core :as db]
             [clojure.java.jdbc :as jdbc]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 ;; ==== backend TESTs ====
 
@@ -15,12 +16,15 @@
 (def root-conn (db/pool root-db-spec))
 
 (defn exec-sql-file
-  [conn file]
-  (jdbc/db-do-prepared
-    conn
-    (slurp file)))
+  [db-spec file]
+  (let [commands (str/split
+                   (slurp file) #";")]
+  (jdbc/execute!
+    db-spec
+    commands
+    :multi? true)))
 
-(exec-sql-file root-conn (io/resource "dnk.sql"))
+(exec-sql-file root-db-spec (io/resource "dnk.sql"))
 
 (def test-conn  db/pooled-db)
 
