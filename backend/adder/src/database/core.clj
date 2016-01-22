@@ -8,8 +8,8 @@
             [jdbc.pool.c3p0 :as pool]))
 
 ;; ERRORS
-(def err-create-game      {:err-code '0001'
-                           :err-desc "Can't create the following game "})
+(def err-create-game {:err-code '0001'
+                      :err-desc "Can't create the following game "})
 (def err-change-game-info {:err-code '0002'
                            :err-desc "Can't commint the following changes to game-id "})
 
@@ -17,7 +17,7 @@
               :subprotocol "mysql"
               :subname     "//127.0.0.1:3306/dnk_test"
               :user        "dnk_test"
-              :password    "8641"})
+              :password    "dnk_test"})
 
 ;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
 (defn pool
@@ -33,7 +33,7 @@
                (.setMaxIdleTime (* 3 60 60)))]
     {:datasource cpds}))
 
-(def pooled-db  (pool db-spec))
+(def pooled-db (pool db-spec))
 
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col-from-table
@@ -41,14 +41,12 @@
   [db-spec
    table-name
    col-name]
-
-    (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
+  (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
 
 (defn select-all-values-from-table
   "return all values from table "
   [db-spec
    table-name]
-
   (select-col-from-table db-spec
                          table-name
                          "*"))
@@ -60,7 +58,6 @@
    col-name
    field-name
    field-val]
-
   (jdbc/query db-spec
               [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
 
@@ -70,7 +67,6 @@
    table-name
    field-name
    field-val]
-
   (select-col-from-table-by-field db-spec
                                   table-name
                                   "*"
@@ -304,7 +300,7 @@
 
 ;;TODO: понять как передать false
 ;;Получаем список игр с параметром isDeleted = false
-(def get-all-active-games
+(defn get-all-active-games
   "Get collection of all games that are currently active"
   [db-spec]
   (select-all-values-from-table-by-field db-spec
@@ -375,19 +371,19 @@
 (defn get-game-forks
   "Get all forks of a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table-key
-                                             id-original-field
-                                             id-game))
+  (select-all-values-from-table-by-field db-spec
+                                         game-table-key
+                                         id-original-field
+                                         id-game))
 
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
   "Get all media for a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table-key
-                                             id-original-field
-                                             id-game))
+  (select-all-values-from-table-by-field db-spec
+                                         game-table-key
+                                         id-original-field
+                                         id-game))
 
 ;;TODO: надо определиться с формой
 ;;Получаем набор пользователей по данной игре
@@ -434,9 +430,9 @@
   [db-spec game-id])
 
 (defn change-game-info-by-id
-   "Create new record in GAME table.
-   Search for similar game first
-   Return gameID and operation-status"
+  "Create new record in GAME table.
+  Search for similar game first
+  Return gameID and operation-status"
   [db-spec game-id game-info]
   (let [result (update-data db-spec game-table-key game-info id-game-field game-id)]
     if (nil? (first result))
@@ -537,7 +533,7 @@
 ;;Добавляет ответ на вопрос
 (defn answer-question
   "Asnwers a question"
-  [db-spec id-question  answer]
+  [db-spec id-question answer]
   )
 
 ;TODO: реализовать функцию delete-answer
@@ -565,23 +561,23 @@
 (def a (select-col-from-table pooled-db "fruit" "name"))
 (def b (select-col-from-table pooled-db "fruit" "cost"))
 
-(jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
-(select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
+(jdbc/query db-spec [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
+(select-all-values-from-table-by-field db-spec "fruit" "cost" 24)
 
 (select-col-from-table pooled-db "fruit" "cost")
-(jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
-(select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
+(jdbc/query pooled-db [(str "select name from fruit where cost = ?") 24])
+(select-col-from-table-by-field pooled-db "fruit" "name" "cost" 24)
 
 (defn update-or-insert!
   "Updates columns or inserts a new row in the specified table"
   [db table row where-clause]
   (jdbc/with-db-transaction [t-con db]
-                         (let [result (jdbc/update! t-con table row where-clause)]
-                           (println t-con)
-                           (println db)
-                           (if (zero? (first result))
-                             (jdbc/insert! t-con table row)
-                             result))))
+                            (let [result (jdbc/update! t-con table row where-clause)]
+                              (println t-con)
+                              (println db)
+                              (if (zero? (first result))
+                                (jdbc/insert! t-con table row)
+                                result))))
 
 (update-or-insert! db-spec :fruit
                    {:name "Cactus" :appearance "Spiky" :cost 2000}
@@ -593,7 +589,7 @@
 ;;; updates the Cactus we just inserted
 
 ;; ==== TESTs ====
-(select-all-values-from-table pooled-db "fruit")
+(select-all-values-from-table db-spec "fruit")
 
 (jdbc/query pooled-db
             ["select name, cost from fruit where appearance = ?" "rosy"])
@@ -611,12 +607,12 @@
 (def a (select-col-from-table pooled-db "fruit" "name"))
 (def b (select-col-from-table pooled-db "fruit" "cost"))
 
-(jdbc/query pooled-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
-(select-all-values-from-table-by-id db-spec "fruit" "cost" 24)
+(jdbc/query db-spec [(str "select " "*" " from " "fruit" " where " "cost" " = ? and id_name = ?") "2000" "1"])
+(select-all-values-from-table-by-field db-spec "fruit" "cost" 24)
 
 (select-col-from-table pooled-db "fruit" "cost")
-(jdbc/query pooled-db [(str "select name from fruit where cost = ?" ) 24])
-(select-col-from-table-by-id pooled-db "fruit" "name" "cost" 24)
+(jdbc/query pooled-db [(str "select name from fruit where cost = ?") 24])
+(select-col-from-table-by-field pooled-db "fruit" "name" "cost" 24)
 
 
 
@@ -624,12 +620,12 @@
   "Updates columns or inserts a new row in the specified table"
   [db table row where-clause]
   (jdbc/with-db-transaction [t-con db]
-                         (let [result (jdbc/update! t-con table row where-clause)]
-                           (println t-con)
-                           (println db)
-                           (if (zero? (first result))
-                             (jdbc/insert! t-con table row)
-                             result))))
+                            (let [result (jdbc/update! t-con table row where-clause)]
+                              (println t-con)
+                              (println db)
+                              (if (zero? (first result))
+                                (jdbc/insert! t-con table row)
+                                result))))
 
 (update-or-insert! db-spec :fruit
                    {:name "Cactus" :appearance "Spiky" :cost 2000}
@@ -643,28 +639,28 @@
 
 
 (def aaa (update-data pooled-db :fruit
-              {:name "Кактус":appearance "Very Spikey"}
-              "id_name" 2))
+                      {:name "Кактус" :appearance "Very Spikey"}
+                      "id_name" 2))
 
 
 ;;======== NEW TESTS =======
-(create-user pooled-db {:user_name   "devPop"
-                         :passw-hash  "12345"
-                         :salt        "54321"
-                         :email       "devPop@test.com"
-                         :dt_created  "2016-01-01"
-                         :is_active   true
-                         :is_banned   false
-                         :is_admin     false})
+(create-user pooled-db {:user_name  "devPop"
+                        :password-hash "12345"
+                        :salt       "54321"
+                        :email      "devPop@test.com"
+                        :dt_created "2016-01-01"
+                        :is_active  true
+                        :is_banned  false
+                        :is_admin   false})
 
-(create-user pooled-db {:user_name   "devAer"
-                         :passw-hash  "abcde"
-                         :salt        "edcba"
-                         :email       "devArt@test.com"
-                         :dt_created  "2016-01-02"
-                         :is_active   true
-                         :is_banned   false
-                         :is_admin     false})
+(create-user pooled-db {:user_name  "devArt"
+                        :password-hash "abcde"
+                        :salt       "edcba"
+                        :email      "devArt@test.com"
+                        :dt_created "2016-01-02"
+                        :is_active  true
+                        :is_banned  false
+                        :is_admin   false})
 
 (delete-data pooled-db :user_name "user_name" "devPop")
 (delete-data pooled-db :user_name "user_name" "devArt")
