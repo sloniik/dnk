@@ -1,10 +1,14 @@
-(ns utilities.core)
+(ns utilities.core
+  (:import java.text.SimpleDateFormat
+           java.util.Date))
 
 (defn elem-in-col?
-  "test if elem in col"
-  "return true if so and nil otherwise"
+  "test if elem in col
+  return true if so and nil otherwise"
   [elem col]
   (some #(= elem %) col))
+
+(defn now [] (.format (SimpleDateFormat. "dd.MM.yyyy HH:mm:ss") (Date.)))
 
 (defn get-uuid
   "return new uuid"
@@ -34,3 +38,8 @@
 ;;test
 (vec->str-with-delimiter [1 2 3] " ")
 
+(defn vec-map->str
+  "vector of maps convert to vector by key and further convert it to string by delimeter"
+  [vec key delimeter]
+  (let [v (vec-map->vec-by-key vec key)]
+    (vec->str-with-delimiter v delimeter)))

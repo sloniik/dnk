@@ -3,15 +3,12 @@
 
 (ns database.core
   (:gen-class)
-  (:import com.mchange.v2.c3p0.ComboPooledDataSource
-           (java.text SimpleDateFormat)
-           (java.util Date))
+  (:import com.mchange.v2.c3p0.ComboPooledDataSource)
   (:require [clojure.java.jdbc :as jdbc]
-            [jdbc.pool.c3p0 :as pool]))
+            [jdbc.pool.c3p0 :as pool]
+            [utilities.core :as u]))
 
 ;; UTILITY
-
-(defn now [] (.format (SimpleDateFormat. "dd.MM.yyyy HH:mm:ss") (Date.)))
 
 ;; ERRORS
 (def err-create-game      {:err-code '0001'
@@ -80,13 +77,10 @@
 
   (select-col-from-table-by-field db-spec table-name "*" field-name field-val))
 
-(defn select-col-from-table-cond-array
-  "on input - vector of maps: {:col-name :operation :val}"
-  [db-spec table-name col-name cond-array]
-  (jdbc/query db-spec
-              [(str "select " col-name " from" table-name "where " )])
-  )
-
+(defn select-col-from-table-cond-map-vec
+  "on input - vector of maps: {:col-name :operation :col-val}"
+  [db-spec table-name col-name-vec cond-map-array]
+  (let [col-names 1]))
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
@@ -512,7 +506,7 @@
   [db-spec id-user id-room]
   (let [map (hash-map room-id-key id-room
                       user-id-key id-user
-                      room-joined-key (now))]
+                      room-joined-key (u/now))]
     (insert-data db-spec room-users-table map)))
 
 ;TODO: добавить второе усовие для update-data (id_user = id-user)
@@ -520,7 +514,7 @@
 (defn leave-room
   "Removes user from a room (settind dt-left)"
   [db-spec id-user id-room]
-  (let [map (hash-map room-left-key (now))]
+  (let [map (hash-map room-left-key (u/now))]
     (update-data db-spec room-users-table map room-id-col id-room)))
 
 ;;Отправляет сообщение в чат
@@ -530,7 +524,7 @@
   (let [map (hash-map :id_user      id-user
                       :id_chat      id-chat
                       :message_text text
-                      :dt_sent      (now))]
+                      :dt_sent      (u/now))]
            (insert-data db-spec chat-message-table map)))
 
 ;TODO: понять как вытащить n сообщений
@@ -548,7 +542,7 @@
   (let [map (hash-map :id_room id-room
                       :id_user id-user
                       :message question
-                      :dt_created (now)
+                      :dt_created (u/now)
                       :is_deleted false)]
     (insert-data db-spec :question map)))
 
@@ -565,7 +559,7 @@
   "Asnwers a question"
   [db-spec id-question  answer]
   (let [map (hash-map :answer answer
-                     :dt_answered (now))]
+                     :dt_answered (u/now))]
     (update-data db-spec :question map :id_question id-question))
   )
 
