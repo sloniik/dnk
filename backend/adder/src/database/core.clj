@@ -79,13 +79,6 @@
         where-col-val     (u/vec-map->vec-by-key cond-map-array :col-val)
         where-cond        (u/concat-vec->str-vec where-operation where-col-val)
         w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
-    (println "sel: " select-col-names)
-    (println "w-c-n: " where-col-names)
-    (println "w-o: " where-operation)
-    (println "w-c-v: " where-col-val)
-    (println "w-c: " where-cond)
-    (println "w-c: " w-cond)
-    (println (str "select " select-col-names " from " table-name " where " w-cond))
     (jdbc/query db-spec
                 [(str "select " select-col-names " from " table-name "  where " w-cond)])))
 

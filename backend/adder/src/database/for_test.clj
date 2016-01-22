@@ -52,8 +52,6 @@
                            [{:col-name "user_name" :operation "=" :col-val "test"}
                             {:col-name "email" :operation "like" :col-val "abs%"}])
 
-
-
 ;; ==== other TESTs ====
 
 (jdbc/query p-db
