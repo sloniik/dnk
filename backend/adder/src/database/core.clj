@@ -99,21 +99,6 @@
   (jdbc/delete! db-spec (name table-name) [(str (name cond-col) " = ? ") cond-val]))
 
 ;; ================ User functions ===================
-;;Список пользователей. Получаются значения полей, кроме password и salt
-;;(def user-table "users")
-;;(def user-session-table "user_session")
-;;(def user-email-col "email")
-;;(def user-pass-col "password_hash")
-;;(def user-id-col "id_user")
-;;(def user-login-col "user_name")
-;;(def user-id-key :id_user)
-;;(def salt-key :salt)
-;;(def email-key :email)
-;;(def pass-key :password_hash)
-;;(def token-key :user_token)
-;;(def user_active?-key :is_active)
-;;(def user-banned?-key :is_banned)
-
 (defn get-all-users
   "List of all users"
   [db-spec]
@@ -274,19 +259,6 @@
 
 
 ;;======================== Game  Functions =====================================
-
-;;(def game-table-key :game)
-;;(def game-table "game")
-;;(def game-deleted?-field "is_deleted")
-;;(def game-private?-field "is_private")
-;;(def game-type-table "game_type")
-;;(def game-variant-table "game_variant")
-;;(def game-media-table "game_media")
-;;(def id-game-field "id_game")
-;;(def id-game-type-filed "id_game_type")
-;;(def id-game-variant-field "id_game_variant")
-;;(def id-author-field "id_author")
-;;(def id-original-field "id_original")
 
 ;;Получаем список всех игр
 (defn get-all-games
@@ -524,7 +496,8 @@
                       :message      question
                       :dt_created   (u/now)
                       :is_deleted   false)]
-    (insert-data db-spec :question map)))
+    (insert-data
+      db-spec :question map)))
 
 ;TODO: реализовать функцию delete-question
 ;;Удаляет вопрос
@@ -532,7 +505,8 @@
   "Removes question"
   [db-spec id-question]
   (let [map (hash-map :is_deleted false)]
-    (update-data db-spec :question map :id_question id-question)))
+    (update-data
+      db-spec :question map :id_question id-question)))
 
 ;;Добавляет ответ на вопрос
 (defn answer-question
@@ -540,8 +514,8 @@
   [db-spec id-question  answer]
   (let [map (hash-map :answer       answer
                       :dt_answered  (u/now))]
-    (update-data db-spec :question map :id_question id-question))
-  )
+    (update-data
+      db-spec :question map :id_question id-question)))
 
 ;TODO: реализовать функцию delete-answer
 ;;Удаляет ответ на вопрос

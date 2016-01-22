@@ -22,4 +22,5 @@
                 [[lein-run "1.2.1"]]
 
   :main         dnk.web
+  :resource-paths ["shared" "dev-resources"]
   )

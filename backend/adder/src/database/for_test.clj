@@ -1,35 +1,72 @@
 (ns database.for-test
   (:require [database.core :as db]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [clojure.java.io :as io]))
 
 ;; ==== backend TESTs ====
 
-(def p-db  db/pooled-db)
+(def root-db-spec {:classname   "com.mysql.jdbc.Driver"
+                   :subprotocol "mysql"
+                   :ssl?        false
+                   :subname     "//127.0.0.1:3306/dnk_test"
+                   :user        "root"
+                   :password    "root"})
 
-(db/create-user p-db {:user_name   "devPop"
-                        :password_hash  "12345"
-                        :salt        "54321"
-                        :email       "devPop@test.com"
-                        :dt_created  "2016-01-01"
-                        :is_active   true
-                        :is_online   false
-                        :is_banned   false
-                        :is_admin     false})
+(def root-conn (db/pool root-db-spec))
 
-(db/create-user p-db {:user_name   "devArt"
-                        :password_hash  "abcde"
-                        :salt        "edcba"
-                        :email       "devArt@abs.com"
-                        :dt_created  "2016-01-02"
-                        :is_online   false
-                        :is_active   true
-                        :is_banned   false
-                        :is_admin     false})
+(defn exec-sql-file
+  [conn file]
+  (jdbc/db-do-prepared
+    conn
+    (slurp file)))
 
-(db/delete-data p-db user-table "user_name" "devPop")
-(db/delete-data p-db user-table "user_name" "devArt")
+(exec-sql-file root-conn (io/resource "dnk.sql"))
 
-(db/select-cols-multi-cond p-db
+(def test-conn  db/pooled-db)
+
+(def user1 (db/create-user test-conn {:user_name "test1"
+                                 :password_hash  "test1"
+                                 :salt           "test1"
+                                 :email          "test1@test.com"
+                                 :dt_created     "2016-01-01"
+                                 :is_active      true
+                                 :is_online      true
+                                 :is_banned      true
+                                 :is_admin       true}))
+
+(def user2 (db/create-user test-conn {:user_name "test2"
+                                 :password_hash  "test2"
+                                 :salt           "test2"
+                                 :email          "test2@test.com"
+                                 :dt_created     "2016-01-01"
+                                 :is_active      false
+                                 :is_online      true
+                                 :is_banned      true
+                                 :is_admin       true}))
+
+(def user3 (db/create-user test-conn {:user_name "test2"
+                                 :password_hash  "test2"
+                                 :salt           "test2"
+                                 :email          "test2@test.com"
+                                 :dt_created     "2016-01-01"
+                                 :is_active      false
+                                 :is_online      true
+                                 :is_banned      true
+                                 :is_admin       true}))
+
+(def user4 (db/create-user test-conn {:user_name "test2"
+                                 :password_hash  "test2"
+                                 :salt           "test2"
+                                 :email          "test2@test.com"
+                                 :dt_created     "2016-01-01"
+                                 :is_active      false
+                                 :is_online      true
+                                 :is_banned      true
+                                 :is_admin       true}))
+
+
+
+(db/select-cols-multi-cond test-conn
                            "users"
                            ["id_user" "user_name" "salt"]
                            [{:col-name "user_name" :operation "=" :col-val "test"}
@@ -37,26 +74,26 @@
 
 ;; ==== other TESTs ====
 
-(jdbc/query p-db
+(jdbc/query test-conn
             ["select name, cost from fruit where appearance = ?" "rosy"])
 
-(db/select-col p-db "fruit" "cost")
-(jdbc/query p-db [(str "select name from fruit where cost = ?" ) 24])
-(db/select-col-by-field p-db "fruit" "name" "cost" 24)
+(db/select-col test-conn "fruit" "cost")
+(jdbc/query test-conn [(str "select name from fruit where cost = ?") 24])
+(db/select-col-by-field test-conn "fruit" "name" "cost" 24)
 
 
-(db/select-all p-db "fruit")
-(db/insert-data p-db :fruit
-             {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
+(db/select-all test-conn "fruit")
+(db/insert-data test-conn :fruit
+                {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
 
 
 ;; ==== TESTs ====
-(db/select-all p-db "fruit")
+;;(db/select-all test-conn "fruit")
 
-(db/select-col-new p-db "fruit" "name")
+;;(db/select-col-new test-conn "fruit" "name")
 
-(jdbc/query p-db [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
+;;(jdbc/query test-conn [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
 
-(db/select-col p-db "fruit" "cost")
-(jdbc/query p-db [(str "select name from fruit where cost = ?" ) 24])
-(db/select-col-by-field p-db "fruit" "name" "cost" 24)
+;;(db/select-col test-conn "fruit" "cost")
+;;(jdbc/query test-conn [(str "select name from fruit where cost = ?") 24])
+;;(db/select-col-by-field test-conn "fruit" "name" "cost" 24)
