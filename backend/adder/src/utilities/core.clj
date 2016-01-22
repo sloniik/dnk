@@ -34,12 +34,39 @@
     (if (nil? (first v))
       vstr
       (recur (drop 1 v)
-             (str vstr (first v) str-delimiter)))))
+             (if (nil? (first (drop 1 v)))
+               (str vstr (first v))
+               (str vstr (first v) str-delimiter))))))
 ;;test
-(vec->str-with-delimiter [1 2 3] " ")
+(vec->str-with-delimiter [1 2 3] ", ")
 
 (defn vec-map->str
   "vector of maps convert to vector by key and further convert it to string by delimeter"
   [vec key delimeter]
   (let [v (vec-map->vec-by-key vec key)]
     (vec->str-with-delimiter v delimeter)))
+
+(defn concat-vec
+  "concat two vectors with delimiter"
+  [vec1 vec2 delimiter]
+  (loop [v1 vec1
+         v2 vec2
+         vstr ""]
+    (let [a (first v1)
+          b (first v2)]
+      (cond
+        (and (nil? a) (nil? b))
+        vstr
+        (or (and (nil? a) (not (nil? b)))
+            (and (not (nil? a)) (nil? b)))
+        "Vectors should be of the same size"
+        :elsW
+        (recur
+          (drop 1 v1)
+          (drop 1 v2)
+          (if (nil? (first (drop 1 v1)))
+            (str vstr a " " b)
+            (str vstr a " " b " " delimiter " ")))))))
+;;test
+(concat-vec [1 2 3] ["=?" "> ?" "like ?"] "and")
+(concat-vec ["user_name" "id_user"] ["=" "<"] "and")
