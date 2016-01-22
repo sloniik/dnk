@@ -73,19 +73,21 @@
    table-name
    col-name-vec
    cond-map-array]
-  (let [select-col-names (u/vec->str-with-delimiter col-name-vec ", ")
-        where-col-names (u/vec-map->vec-by-key cond-map-array :col-name)
-        where-operation (u/vec-map->vec-by-key cond-map-array :operation)
-        where-col-val (u/vec-map->str cond-map-array :col-val " ")
-        where-cond (u/concat-vec where-col-names where-operation "and")]
+  (let [select-col-names  (u/vec->str-with-delimiter col-name-vec ", ")
+        where-col-names   (u/vec-map->vec-by-key cond-map-array :col-name)
+        where-operation   (u/vec-map->vec-by-key cond-map-array :operation)
+        where-col-val     (u/vec-map->vec-by-key cond-map-array :col-val)
+        where-cond        (u/concat-vec->str-vec where-operation where-col-val)
+        w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
     (println "sel: " select-col-names)
     (println "w-c-n: " where-col-names)
     (println "w-o: " where-operation)
     (println "w-c-v: " where-col-val)
     (println "w-c: " where-cond)
-    (println (str "select " select-col-names " from " table-name " where " where-cond) )
+    (println "w-c: " w-cond)
+    (println (str "select " select-col-names " from " table-name " where " w-cond))
     (jdbc/query db-spec
-                [(str "select " select-col-names " from " table-name "  where " where-cond) where-col-val])))
+                [(str "select " select-col-names " from " table-name "  where " w-cond)])))
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"

@@ -44,12 +44,13 @@
 (db/select-col-from-table-by-field p-db "users" "user_name" "user_name" "devArt")
 (jdbc/query p-db
             ["select user_name, salt from users where user_name ='devArt' and id_user <50"])
-
+(jdbc/query p-db
+            ["select name, salt from users where user_name = 'devArt'  and  id_user < 50"])
 (db/select-cols-multi-cond p-db
                            "users"
-                           ["name" "salt"]
-                           [{:col-name "user_name" :operation "=?" :col-val "devArt"}
-                            {:col-name "id_user" :operation "<?" :col-val "5"}])
+                           ["id_user" "user_name" "salt"]
+                           [{:col-name "user_name" :operation "=" :col-val "test"}
+                            {:col-name "email" :operation "like" :col-val "abs%"}])
 
 
 
