@@ -6,13 +6,9 @@
   (:import com.mchange.v2.c3p0.ComboPooledDataSource)
   (:require [clojure.java.jdbc :as jdbc]
             [jdbc.pool.c3p0 :as pool]
-            [utilities.core :as u]))
+            [utilities.core :as u]
+            [database.errors :as err]))
 
-;; ERRORS
-(def err-create-game      {:err-code '0001'
-                           :err-desc "Can't create the following game "})
-(def err-change-game-info {:err-code '0002'
-                           :err-desc "Can't commint the following changes to game-id "})
 
 (def db-spec {:classname   "com.mysql.jdbc.Driver"
               :subprotocol "mysql"
@@ -40,23 +36,17 @@
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col-from-table
   "return specific column from table"
-  [db-spec
-   table-name
-   col-name]
+  [db-spec table-name col-name]
     (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
 
 (defn select-all-values-from-table
   "return all values from table "
-  [db-spec
-   table-name]
-  (select-col-from-table db-spec
-                         table-name
-                         "*"))
+  [db-spec table-name]
+  (select-col-from-table db-spec table-name "*"))
 
 (defn select-col-from-table-by-field
   "return specific column from table where field-name = field-val"
-  [db-spec
-   table-name
+  [db-spec table-name
    col-name
    field-name
    field-val]
@@ -418,9 +408,9 @@
   [db-spec game-info]
   (let [result (insert-data db-spec game-table-key game-info)]
     (if (nil? (:generated_key result))
-    {:error-code (:err-code err-create-game)
-     :error-desc (str (:err-desc err-create-game) game-info)}
-    (:generated_key result))))
+      {:error-code (:err-code err/create-game-error)
+       :error-desc (str (:err-desc err/create-game-error) game-info)}
+      (:generated_key result))))
 
 ;;NOT IN TO-DO LIST
 (defn approve-game
@@ -434,8 +424,8 @@
   [db-spec game-id game-info]
   (let [result (update-data db-spec game-table-key game-info id-game-field game-id)]
     (if (nil? (first result))
-    {:error-code (:err-code err-change-game-info)
-     :error-desc (str (:err-desc err-change-game-info) game-id " game-info " game-info)}
+    {:error-code (:err-code err/change-game-info-error)
+     :error-desc (str (:err-desc err/change-game-info-error) game-id " game-info " game-info)}
     (first result))))
 
 (defn get-random-game
@@ -540,11 +530,11 @@
 (defn add-question
   "Adds question to a certain room from a certain user"
   [db-spec id-room id-user question]
-  (let [map (hash-map :id_room id-room
-                      :id_user id-user
-                      :message question
-                      :dt_created (u/now)
-                      :is_deleted false)]
+  (let [map (hash-map :id_room      id-room
+                      :id_user      id-user
+                      :message      question
+                      :dt_created   (u/now)
+                      :is_deleted   false)]
     (insert-data db-spec :question map)))
 
 ;TODO: реализовать функцию delete-question
@@ -559,9 +549,10 @@
 (defn answer-question
   "Asnwers a question"
   [db-spec id-question  answer]
-  (let [map (hash-map :answer answer
-                     :dt_answered (u/now))]
-    (update-data db-spec :question map :id_question id-question)))
+  (let [map (hash-map :answer       answer
+                      :dt_answered  (u/now))]
+    (update-data db-spec :question map :id_question id-question))
+  )
 
 ;TODO: реализовать функцию delete-answer
 ;;Удаляет ответ на вопрос
