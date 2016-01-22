@@ -79,11 +79,7 @@
    field-name
    field-val]
 
-  (select-col-from-table-by-field db-spec
-                                  table-name
-                                  "*"
-                                  field-name
-                                  field-val))
+  (select-col-from-table-by-field db-spec table-name "*" field-name field-val))
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
@@ -127,19 +123,13 @@
 (defn get-user-info-by-id
   "Get user by user-id"
   [db-spec user-id]
-  (select-all-values-from-table-by-field db-spec
-                                         user-table
-                                         user-id-col
-                                         user-id))
+  (select-all-values-from-table-by-field db-spec user-table user-id-col user-id))
 
 ;;Получем пользователя по логину
 (defn get-user-info-by-login
   "Get user by login"
   [db-spec login]
-  (select-all-values-from-table-by-field db-spec
-                                         user-table
-                                         user-login-col
-                                         login))
+  (select-all-values-from-table-by-field db-spec user-table user-login-col login))
 
 ;;Общая функция информации по пользователю  пользователя
 (defn get-user-info
@@ -152,26 +142,20 @@
 (defn get-user-salt
   "Get user salt"
   [db-spec id id-type]
-  (let [user-info (get-user-info db-spec
-                                 id
-                                 id-type)]
+  (let [user-info (get-user-info db-spec id id-type)]
     (salt-key user-info)))
 
 (defn get-user-pass
   "get user password hash"
   [db-spec id id-type]
-  (let [user-info (get-user-info db-spec
-                                 id
-                                 id-type)]
+  (let [user-info (get-user-info db-spec id id-type)]
     (pass-key user-info)))
 
 ;;Получаем значения полей пользователя (кроме password и salt)
 (defn get-user-safe-info
   "Get user by type key (id or login)"
   [db-spec id id-type]
-  (let [user-info (get-user-info db-spec
-                                 id
-                                 id-type)]
+  (let [user-info (get-user-info db-spec id id-type)]
     (dissoc
       (dissoc user-info salt-key)
       pass-key)))
@@ -465,12 +449,14 @@
 (def room-table "room")
 (def room-users-table "room_users")
 (def chat-table "chat")
+(def chat-message-table "chat_message")
 (def room-active?-key :is_active)
 (def room-id-key :id_room)
 (def chat-id-key :id_chat)
 (def room-joined-key :dt_joined)
 (def room-left-key :dt_left)
 (def room-id-col "id_room")
+
 
 
 
@@ -530,39 +516,50 @@
   (let [map (hash-map room-left-key (now))]
     (update-data db-spec room-users-table map room-id-col id-room)))
 
-;TODO: реализовать функцию send-message
 ;;Отправляет сообщение в чат
 (defn send-message
   "Sends message to a chat"
-  [db-spec id-user id-chat]
-  )
+  [db-spec id-user id-chat text]
+  (let [map (hash-map :id_user      id-user
+                      :id_chat      id-chat
+                      :message_text text
+                      :dt_sent      (now))]
+           (insert-data db-spec chat-message-table map)))
 
-;TODO: реализовать функцию get-new-messages
+;TODO: понять как вытащить n сообщений
 ;;Получает список из n последних сообщений
 (defn get-last-messages
   "Get list of n last messages in chat"
   [db-spec id-chat n]
+  (select-all-values-from-table-by-field db-spec chat-message-table :id_chat id-chat)
   )
 
-;TODO: реализовать фукнцию add-question
 ;;Создает новый вопрос
 (defn add-question
   "Adds question to a certain room from a certain user"
   [db-spec id-room id-user question]
-  )
+  (let [map (hash-map :id_room id-room
+                      :id_user id-user
+                      :message question
+                      :dt_created (now)
+                      :is_deleted false)]
+    (insert-data db-spec :question map)))
 
 ;TODO: реализовать функцию delete-question
 ;;Удаляет вопрос
 (defn delete-question
   "Removes question"
   [db-spec id-question]
-  )
+  (let [map (hash-map :is_deleted false)]
+    (update-data db-spec :question map :id_question id-question)))
 
-;TODO: реализовать функцию answer-question
 ;;Добавляет ответ на вопрос
 (defn answer-question
   "Asnwers a question"
   [db-spec id-question  answer]
+  (let [map (hash-map :answer answer
+                     :dt_answered (now))]
+    (update-data db-spec :question map :id_question id-question))
   )
 
 ;TODO: реализовать функцию delete-answer
