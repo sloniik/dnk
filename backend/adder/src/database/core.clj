@@ -574,7 +574,3 @@
 (defn delete-answer
   "Removes answer"
   [db-spec id-question])
-
-
-(def a ["2000" "1"])
-(jdbc/query db-spec [(str "select " "*" " from " "fruit" " where " "cost" " = ? and id_name = ?") (1 vec-par ) (2 vec-par)])
