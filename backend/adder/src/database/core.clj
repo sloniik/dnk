@@ -104,7 +104,19 @@
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
-z
+(def user-table "users")
+(def user-session-table "user_session")
+(def user-email-col "email")
+(def user-pass-col "password_hash")
+(def user-id-col "id_user")
+(def user-login-col "user_name")
+(def user-id-key :id_user)
+(def salt-key :salt)
+(def email-key :email)
+(def pass-key :password-hash)
+(def token-key :user_token)
+(def user_active?-key :is_active)
+(def user-banned?-key :is_banned)
 
 (defn get-all-users
   "List of all users"
@@ -669,8 +681,8 @@ z
                          :salt        "54321"
                          :email       "devPop@test.com"
                          :dt_created  "2016-01-01"
-                         :is_online   false
                          :is_active   true
+                         :is_online   false?
                          :is_banned   false
                          :is_admin     false})
 
