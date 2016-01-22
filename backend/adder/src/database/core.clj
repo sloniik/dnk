@@ -37,12 +37,13 @@
 (defn select-col-from-table
   "return specific column from table"
   [db-spec table-name col-name]
-    (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
+    (jdbc/query db-spec [(str "select " (name col-name)
+                              "  from " (name table-name))]))
 
 (defn select-all-values-from-table
   "return all values from table "
   [db-spec table-name]
-  (select-col-from-table db-spec table-name "*"))
+  (select-col-from-table db-spec (name table-name) "*"))
 
 (defn select-col-from-table-by-field
   "return specific column from table where field-name = field-val"
@@ -51,7 +52,9 @@
    field-name
    field-val]
   (jdbc/query db-spec
-              [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
+              [(str "select " (name col-name)
+                    "  from " (name table-name)
+                    " where " (name field-name) " = ?") field-val]))
 
 (defn select-all-values-from-table-by-field
   "return all values from specified table with col-id-name and id-value"
@@ -59,7 +62,7 @@
    table-name
    field-name
    field-val]
-  (select-col-from-table-by-field db-spec table-name "*" field-name field-val))
+  (select-col-from-table-by-field db-spec (name table-name) "*" (name field-name) field-val))
 
 (defn select-cols-multi-cond
   "on input - vector of maps: {:col-name :operation :col-val}"
@@ -76,52 +79,51 @@
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
  [db-spec table-name new-record-map]
- (jdbc/insert! db-spec table-name new-record-map))
+ (jdbc/insert! db-spec (name table-name) new-record-map))
 
 (defn update-data
   "update string (update-record-map) in the table (table-name-key) where col-name col-val"
   [db-spec table-name update-record-map cond-col cond-val]
-  (jdbc/update! db-spec table-name
-                update-record-map
-                [(str cond-col " = ? ") cond-val]))
+  (jdbc/update! db-spec (name table-name) update-record-map [(str (name cond-col) " = ? ") cond-val]))
 
 (defn delete-data
-  [db-spec table-name-key cond-col cond-val]
-  (jdbc/delete! db-spec table-name-key
-                [(str cond-col " = ? ") cond-val]))
+  [db-spec table-name cond-col cond-val]
+  (jdbc/delete! db-spec (name table-name) [(str (name cond-col) " = ? ") cond-val]))
 
 ;; ================ User functions ===================
 ;;Список пользователей. Получаются значения полей, кроме password и salt
-(def user-table "users")
-(def user-session-table "user_session")
-(def user-email-col "email")
-(def user-pass-col "password_hash")
-(def user-id-col "id_user")
-(def user-login-col "user_name")
-(def user-id-key :id_user)
-(def salt-key :salt)
-(def email-key :email)
-(def pass-key :password-hash)
-(def token-key :user_token)
-(def user_active?-key :is_active)
-(def user-banned?-key :is_banned)
+;;(def user-table "users")
+;;(def user-session-table "user_session")
+;;(def user-email-col "email")
+;;(def user-pass-col "password_hash")
+;;(def user-id-col "id_user")
+;;(def user-login-col "user_name")
+;;(def user-id-key :id_user)
+;;(def salt-key :salt)
+;;(def email-key :email)
+;;(def pass-key :password_hash)
+;;(def token-key :user_token)
+;;(def user_active?-key :is_active)
+;;(def user-banned?-key :is_banned)
 
 (defn get-all-users
   "List of all users"
   [db-spec]
-  (select-all-values-from-table db-spec user-table))
+  (select-all-values-from-table db-spec :users))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
   "Get user by user-id"
   [db-spec user-id]
-  (select-all-values-from-table-by-field db-spec user-table user-id-col user-id))
+  (select-all-values-from-table-by-field
+    db-spec :users :id_user user-id))
 
 ;;Получем пользователя по логину
 (defn get-user-info-by-login
   "Get user by login"
   [db-spec login]
-  (select-all-values-from-table-by-field db-spec user-table user-login-col login))
+  (select-all-values-from-table-by-field
+    db-spec :user :user_name login))
 
 ;;Общая функция информации по пользователю  пользователя
 (defn get-user-info
@@ -135,13 +137,13 @@
   "Get user salt"
   [db-spec id id-type]
   (let [user-info (get-user-info db-spec id id-type)]
-    (salt-key user-info)))
+    (:salt user-info)))
 
 (defn get-user-pass
   "get user password hash"
   [db-spec id id-type]
   (let [user-info (get-user-info db-spec id id-type)]
-    (pass-key user-info)))
+    (:password_hash user-info)))
 
 ;;Получаем значения полей пользователя (кроме password и salt)
 (defn get-user-safe-info
@@ -149,8 +151,8 @@
   [db-spec id id-type]
   (let [user-info (get-user-info db-spec id id-type)]
     (dissoc
-      (dissoc user-info salt-key)
-      pass-key)))
+      (dissoc user-info :salt)
+      :password_hash)))
 
 (def get-media-types
   "Get all types of media available"
@@ -167,10 +169,8 @@
 (defn get-all-user-sessions
   "Gets all sessions, made by user"
   [db-spec user-id]
-  (select-all-values-from-table-by-field db-spec
-                                         user-table
-                                         user-login-col
-                                         user-id))
+  (select-all-values-from-table-by-field
+    db-spec :users :user_name user-id))
 
 ;TODO: реализовать функцию
 (defn get-current-user-session
@@ -184,9 +184,8 @@
   "Check whether login available"
   [db-spec
    login]
-  (let [user-info (get-user-safe-info db-spec
-                                      login
-                                      :login)]
+  (let [user-info (get-user-safe-info
+                    db-spec login :login)]
     (if (nil? user-info)
       true
       false)))
@@ -195,11 +194,8 @@
   "Check whether email is already registered"
   [db-spec
    email]
-  (let [user-info (select-col-from-table-by-field db-spec
-                                                  user-table
-                                                  user-email-col
-                                                  user-email-col
-                                                  email)]
+  (let [user-info (select-col-from-table-by-field
+                    db-spec :users :email :email email)]
     (if (nil? user-info)
       true
       false)))
@@ -211,9 +207,8 @@
    id-user
    id-type
    password-hash]
-  (if (= password-hash (get-user-pass db-spec
-                                      id-user
-                                      id-type))
+  (if (= password-hash (get-user-pass
+                         db-spec id-user id-type))
     true
     false))
 
@@ -222,7 +217,8 @@
   "Create new user"
   [db-spec
    user-map]
-  (insert-data db-spec user-table user-map)
+  (insert-data
+    db-spec :users user-map)
   )
 
 ;;Меняет профиль пользователя
@@ -231,7 +227,8 @@
   [db-spec
    id-user
    profile-map]
-  (update-data db-spec user-table profile-map user-id-col id-user)
+  (update-data
+    db-spec :users profile-map :id_user id-user)
   )
 
 ;;Обновляем токен пользователя
@@ -240,61 +237,63 @@
   [db-spec
    id-user
    token]
-  (update-data db-spec user-table (hash-map [token-key token]) user-id-col id-user))
+  (update-data
+    db-spec :users (hash-map [:user_token token]) :id_user id-user))
 
 (defn create-user-session
   "Creates new user session"
   [db-spec
    id-user]
-  (let [user-map (hash-map user-id-key id-user)]
-    (insert-data db-spec user-session-table user-map)))
+  (let [user-map (hash-map :id_user  id-user)]
+    (insert-data
+      db-spec :user_session user-map)))
 
 ;;Деактивирует пользователя. ставит в таблице Users is_active=false
 (defn deactivate-user
   "Deactivates user (updating record in table Users"
   [db-spec
    id-user]
-  (update-data db-spec user-table (hash-map [user_active?-key false]) user-id-col id-user))
+  (update-data
+    db-spec :users (hash-map [:is_active false]) :id_user id-user))
 
 ;;Банит пользователя, запрещая ему активность на сайте
 (defn ban-user
   "Bans user blocking his activity"
   [db-spec
    id-user]
-  (update-data db-spec user-table (hash-map [user-banned?-key false]) user-id-col id-user))
+  (update-data
+    db-spec :users (hash-map [:is_banned false]) :id_user id-user))
 
 
 ;;======================== Game  Functions =====================================
 
-(def game-table-key :game)
-(def game-table "game")
-(def game-deleted?-field "is_deleted")
-(def game-private?-field "is_private")
-(def game-type-table "game_type")
-(def game-variant-table "game_variant")
-(def game-media-table "game_media")
-(def id-game-field "id_game")
-(def id-game-type-filed "id_game_type")
-(def id-game-variant-field "id_game_variant")
-(def id-author-field "id_author")
-(def id-original-field "id_original")
+;;(def game-table-key :game)
+;;(def game-table "game")
+;;(def game-deleted?-field "is_deleted")
+;;(def game-private?-field "is_private")
+;;(def game-type-table "game_type")
+;;(def game-variant-table "game_variant")
+;;(def game-media-table "game_media")
+;;(def id-game-field "id_game")
+;;(def id-game-type-filed "id_game_type")
+;;(def id-game-variant-field "id_game_variant")
+;;(def id-author-field "id_author")
+;;(def id-original-field "id_original")
 
 ;;Получаем список всех игр
 (defn get-all-games
   "Get collection of all games ever created"
   [db-spec]
-  (select-all-values-from-table db-spec
-                                game-table-key))
+  (select-all-values-from-table
+    db-spec :game))
 
 
 ;;Получаем список игр с параметром isDeleted = false
 (defn get-all-active-games
   "Get collection of all games that are currently active"
   [db-spec]
-  (select-all-values-from-table-by-field db-spec
-                                         game-table-key
-                                         game-deleted?-field
-                                         false))
+  (select-all-values-from-table-by-field
+    db-spec :game :is_deleted false))
 
 ;;TODO: переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
 ;;TODO: понять, как получать данные по несколькоим условиям
@@ -302,34 +301,28 @@
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (select-all-values-from-table-by-field db-spec
-                                         game-table-key
-                                         game-private?-field
-                                         false))
+  (select-all-values-from-table-by-field
+    db-spec :game :is_private false))
 
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
   [db-spec]
-  (select-all-values-from-table db-spec
-                                game-type-table))
+  (select-all-values-from-table
+    db-spec :game_type))
 
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
   [db-spec id-game-type]
-  (select-all-values-from-table-by-field db-spec
-                                         game-variant-table
-                                         id-game-type-filed
-                                         id-game-type))
+  (select-all-values-from-table-by-field
+    db-spec :game_variant :id_game_type id-game-type))
 
 ;;Получаем список игр определенного типа
 (defn get-games-by-variant
   "Get collection of games by variant"
   [db-spec id-game-variant]
-  (select-all-values-from-table-by-field db-spec
-                                         game-table-key
-                                         id-game-variant-field
-                                         id-game-variant))
+  (select-all-values-from-table-by-field
+    db-spec :game :id_game_variant id-game-variant))
 
 ;TODO: пока не знаю как писать
 ;;Получаем несколько новых игр
@@ -342,54 +335,42 @@
 (defn get-games-by-author
   "Get collection of games by author"
   [db-spec id-author]
-  (select-all-values-from-table-by-field db-spec
-                                         game-table-key
-                                         id-author-field
-                                         id-author))
+  (select-all-values-from-table-by-field
+    db-spec :game :id_author id-author))
 
 ;;Получаем список игр с idOriginal = null
 (defn get-all-original-games
   "Get all games that are not forks"
   [db-spec]
-  (select-all-values-from-table-by-field db-spec
-                                         game-table-key
-                                         id-original-field
-                                         nil))
+  (select-all-values-from-table-by-field
+    db-spec :game :id_original nil))
 
 ;;Получаем список форков игры
 (defn get-game-forks
   "Get all forks of a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table-key
-                                             id-original-field
-                                             id-game))
+      (select-all-values-from-table-by-field
+        db-spec :game :id_original id-game))
 
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
   "Get all media for a certain game"
   [db-spec id-game]
-      (select-all-values-from-table-by-field db-spec
-                                             game-table-key
-                                             id-original-field
-                                             id-game))
+      (select-all-values-from-table-by-field
+        db-spec :game_media :id_game id-game))
 
 ;;Получаем набор пользователей по данной игре
 (defn get-game-users
   "Get all users for a certain game"
   [db-spec id-game]
-  (select-all-values-from-table-by-field db-spec
-                                         game-media-table
-                                         id-game-field
-                                         id-game))
+  (select-all-values-from-table-by-field
+    db-spec :game_users :id_game id-game))
 
 (defn get-game-by-id
   "Get game data by it's id"
   [db-spec id-game]
-  (select-all-values-from-table-by-field db-spec
-                                         game-table-key
-                                         id-game-field
-                                         id-game))
+  (select-all-values-from-table-by-field
+    db-spec :game :id_game id-game))
 
 (defn get-random-game
   "Return random game"
@@ -406,7 +387,9 @@
   Return gameID and operation-status
   game info - map"
   [db-spec game-info]
-  (let [result (insert-data db-spec game-table-key game-info)]
+  (let [result (insert-data
+                 db-spec :game game-info)]
+
     (if (nil? (:generated_key result))
       {:error-code (:err-code err/create-game-error)
        :error-desc (str (:err-desc err/create-game-error) game-info)}
@@ -422,7 +405,9 @@
    Search for similar game first
    Return gameID and operation-status"
   [db-spec game-id game-info]
-  (let [result (update-data db-spec game-table-key game-info id-game-field game-id)]
+  (let [result (update-data
+                 db-spec :game game-info :id_game game-id)]
+
     (if (nil? (first result))
     {:error-code (:err-code err/change-game-info-error)
      :error-desc (str (:err-desc err/change-game-info-error) game-id " game-info " game-info)}
@@ -436,77 +421,74 @@
         n-games (take (rand-int game-number) games)]
     (last n-games)))
 
-;; ================= ROOM ==================
-
-(def room-table "room")
-(def room-users-table "room_users")
-(def chat-table "chat")
-(def chat-message-table "chat_message")
-(def room-active?-key :is_active)
-(def room-id-key :id_room)
-(def chat-id-key :id_chat)
-(def room-joined-key :dt_joined)
-(def room-left-key :dt_left)
-(def room-id-col "id_room")
-
-
-
+;; ================= ROOM ==================\
+;;(def room-table "room")
+;;(def room-users-table "room_users")
+;;(def chat-table "chat")
+;;(def chat-message-table "chat_message")
+;;(def room-active?-key :is_active)
+;;(def room-id-key :id_room)
+;;(def chat-id-key :id_chat)
+;;(def room-joined-key :dt_joined)
+;;(def room-left-key :dt_left)
+;;(def room-id-col "id_room")
 
 ;;Создает новую комнату
 (defn create-room
   "Creates room for a certain game"
   [db-spec
    room-map]
-  (insert-data db-spec room-table room-map)
+  (insert-data db-spec :room room-map)
   )
 
 ;;Удаляет комнату (ставит is-active = false)
 (defn kill-room
   "Kills certain rooom"
   [db-spec id-room]
-  (let [map (hash-map room-active?-key true)]
-    (update-data db-spec room-table map room-id-col id-room)))
+  (let [map (hash-map :is_active true)]
+    (update-data
+      db-spec :room map :id_room id-room)))
 
 ;TODO: добавить второе условие (is_active = true)
 ;;Получает список активных комнат конретной игры
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
-  (select-all-values-from-table-by-field db-spec room-table id-game-field id-game)
-  )
+  (select-all-values-from-table-by-field
+    db-spec :room :id_game id-game))
 
 ;TODO: добавить второе условие (dt_left = nil)
 ;;Получает текущий список пользователей в конкретной комнате
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (select-all-values-from-table-by-field db-spec room-users-table room-id-col id-room)
-  )
+  (select-all-values-from-table-by-field
+    db-spec :room_users :id_room id-room))
 
 ;TODO: добавить второе услвоие (dt_closed = nil)
 ;;Получает чат комнаты
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
-  (select-all-values-from-table-by-field db-spec chat-table room-id-col id-room )
-  )
+  (select-all-values-from-table-by-field
+    db-spec :chat :id_room id-room))
 
 ;;Добавляет пользователя в комнату
 (defn enter-room
   "Adds user to a room"
   [db-spec id-user id-room]
-  (let [map (hash-map room-id-key id-room
-                      user-id-key id-user
-                      room-joined-key (u/now))]
-    (insert-data db-spec room-users-table map)))
+  (let [map (hash-map :id_room id-room
+                      :id_user id-user
+                      :dt_joined (u/now))]
+    (insert-data db-spec :room_users map)))
 
 ;TODO: добавить второе усовие для update-data (id_user = id-user)
 ;;Убирает пользователя из комнаты (задавая dt-left)
 (defn leave-room
   "Removes user from a room (settind dt-left)"
   [db-spec id-user id-room]
-  (let [map (hash-map room-left-key (u/now))]
-    (update-data db-spec room-users-table map room-id-col id-room)))
+  (let [map (hash-map :dt_left (u/now))]
+    (update-data db-spec :room_users map :id_room id-room)))
 
 ;;Отправляет сообщение в чат
 (defn send-message
@@ -516,14 +498,14 @@
                       :id_chat      id-chat
                       :message_text text
                       :dt_sent      (u/now))]
-           (insert-data db-spec chat-message-table map)))
+           (insert-data db-spec :chat map)))
 
 ;TODO: понять как вытащить n сообщений
 ;;Получает список из n последних сообщений
 (defn get-last-messages
   "Get list of n last messages in chat"
   [db-spec id-chat n]
-  (select-all-values-from-table-by-field db-spec chat-message-table :id_chat id-chat)
+  (select-all-values-from-table-by-field db-spec :chat :id_chat id-chat)
   )
 
 ;;Создает новый вопрос
