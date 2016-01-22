@@ -8,8 +8,6 @@
             [jdbc.pool.c3p0 :as pool]
             [utilities.core :as u]))
 
-;; UTILITY
-
 ;; ERRORS
 (def err-create-game      {:err-code '0001'
                            :err-desc "Can't create the following game "})
@@ -45,14 +43,12 @@
   [db-spec
    table-name
    col-name]
-
     (jdbc/query db-spec [(str "select " col-name " from " table-name)]))
 
 (defn select-all-values-from-table
   "return all values from table "
   [db-spec
    table-name]
-
   (select-col-from-table db-spec
                          table-name
                          "*"))
@@ -64,7 +60,6 @@
    col-name
    field-name
    field-val]
-
   (jdbc/query db-spec
               [(str "select " col-name " from " table-name " where " field-name " = ?") field-val]))
 
@@ -74,13 +69,19 @@
    table-name
    field-name
    field-val]
-
   (select-col-from-table-by-field db-spec table-name "*" field-name field-val))
 
-(defn select-col-from-table-cond-map-vec
+(defn select-cols-multi-cond
   "on input - vector of maps: {:col-name :operation :col-val}"
-  [db-spec table-name col-name-vec cond-map-array]
-  (let [col-names 1]))
+  [db-spec
+   table-name
+   col-name-vec
+   cond-map-array]
+  (let [select-col-names (u/vec->str-with-delimiter col-name-vec " ")
+        where-col-names (u/vec-map->str cond-map-array :col-name " ")
+        where-operation (u/vec-map->str cond-map-array :operation " ")
+        where-col-val (u/vec-map->str cond-map-array :col-val " ")]
+    ))
 
 (defn insert-data
  "insert data (new-record-map) to the table (table-name-key)"
@@ -560,8 +561,7 @@
   [db-spec id-question  answer]
   (let [map (hash-map :answer answer
                      :dt_answered (u/now))]
-    (update-data db-spec :question map :id_question id-question))
-  )
+    (update-data db-spec :question map :id_question id-question)))
 
 ;TODO: реализовать функцию delete-answer
 ;;Удаляет ответ на вопрос
