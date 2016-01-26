@@ -210,22 +210,22 @@
 (defn get-user-info-by-id
   "Get user by user-id"
   [db-spec user-id]
-  (select-all-by-field db-spec (u/sel-n-upd-map :users :id_user user-id)))
+  (first (select-all-by-field db-spec (u/sel-n-upd-map :users :id_user user-id))))
 
 ;;Получем пользователя по логину
 (defn get-user-info-by-login
   "Get user by login"
   [db-spec login]
-  (select-all-by-field db-spec (u/sel-n-upd-map :user :user_name login)))
+  (first (select-all-by-field db-spec (u/sel-n-upd-map :users :user_name login))))
 
 (defn get-user-info-by-mail
   "Get user by user-id"
   [db-spec user-mail]
-  (select-all-by-field db-spec (u/sel-n-upd-map :user :user_name user-mail)))
+  (first (select-all-by-field db-spec (u/sel-n-upd-map :users :user_name user-mail))))
 
 ;;Общая функция информации по пользователю  пользователя
 (defn get-user-info
-  "Get user salt"
+  "Get user info"
   [db-spec id type]
   (cond
         (= type :login)
@@ -256,6 +256,7 @@
         (dissoc :salt)
         (dissoc :password-hash))))
 
+;TODO: реализовать функцию
 (def get-media-types
   "Get all types of media available"
   [db-spec])
@@ -306,7 +307,7 @@
   "Create new user"
   [db-spec
    user-map]
-  (insert-data db-spec :users user-map))
+  (:generated_key (first (insert-data db-spec :users user-map))))
 
 (defn send-email
   "send email with code in the email body"

@@ -1,6 +1,7 @@
 (ns database.for-test
   (:require [database.core :as db]
             [clojure.java.jdbc :as jdbc]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [utilities.core :as u]
             [database.errors :as err]
@@ -16,8 +17,6 @@
                    :password    "12345"})
 
 (def root-conn (db/pool root-db-spec))
-
-;(k/defdb korma-db db/db)
 
 ;(defn exec-sql-file
 ;  [db-spec file]
@@ -61,7 +60,7 @@
                                       :dt_created    "2016-01-01"
                                       :is_active     false
                                       :is_online     true
-                                      :is_banned     true
+                                      :is_banned     false
                                       :is_admin      true}))
 
 (def user4 (db/create-user test-conn {:user_name     "test2"
@@ -72,16 +71,7 @@
                                       :is_active     false
                                       :is_online     true
                                       :is_banned     true
-                                      :is_admin      true}))
-(def user4 (db/create-user test-conn {:user_name     "test10"
-                                      :password_hash "test10"
-                                      :salt          "test10"
-                                      :email         "test10@test.com"
-                                      :dt_created    "2015-01-23"
-                                      :is_active     false
-                                      :is_online     true
-                                      :is_banned     true
-                                      :is_admin      true}))
+                                      :is_admin      false}))
 
 (db/select-cols-multi-cond test-conn
                            "users"
@@ -91,15 +81,14 @@
 
 ;; ==== other TESTs ====
 
-(jdbc/query test-conn ["select name, cost from fruit where appearance = ?" "rosy"])
+;(jdbc/query test-conn ["select name, cost from fruit where appearance = ?" "rosy"]);
 
-(db/select-col test-conn (u/sel-n-upd-map  "fruit" "cost"))
+;(db/select-col test-conn (u/sel-n-upd-map  "fruit" "cost"))
+;(jdbc/query test-conn [(str "select name from fruit where cost = ?") 24])
+;(db/select-col-by-field test-conn (u/sel-n-upd-map "fruit" "name" "cost" 24))
 
-(jdbc/query test-conn [(str "select name from fruit where cost = ?") 24])
-(db/select-col-by-field test-conn (u/sel-n-upd-map "fruit" "name" "cost" 2000))
 
-
-(db/select-all test-conn "users")
+(db/select-all test-conn "fruit")
 (db/insert-data test-conn :fruit {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
 
 

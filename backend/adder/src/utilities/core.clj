@@ -8,7 +8,7 @@
   [elem col]
   (some #(= elem %) col))
 
-(defn now [] (.format (SimpleDateFormat. "dd.MM.yyyy HH:mm:ss") (Date.)))
+(defn now [] (.format (SimpleDateFormat. "yyyy.MM.dd HH:mm:ss") (Date.)))
 
 (defn get-uuid
   "return new uuid"
