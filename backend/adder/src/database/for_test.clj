@@ -1,4 +1,5 @@
 (ns database.for-test
+  (:use '(clojure.test))
   (:require [database.core :as db]
             [clojure.java.jdbc :as jdbc]
             [clojure.java.io :as io]

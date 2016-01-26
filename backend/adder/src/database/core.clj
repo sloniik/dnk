@@ -12,7 +12,7 @@
             [korma.db :as kdb]))
 
 
-;(def db-spec {:classname   "com.mysql.jdbc.Driver"
+;(def db-spec {:classname   "com.mysql.jdbc.Dri 1 zver"
 ;              :subprotocol "mysql"
 ;              :ssl?        false
 ;              :subname     "//127.0.0.1:3306/dnk_test"
