@@ -49,9 +49,9 @@
   "return specific column from table where field-name = field-val"
   [db-spec select-map]
   (jdbc/query db-spec
-              [(str "select " (:col-name   (name select-map))
-                    " from "  (:table-name (name select-map))
-                    " where " (:field-name (name select-map)) " = ?")
+              [(str "select " (name (:col-name   select-map))
+                    " from "  (name (:table-name select-map))
+                    " where " (name (:field-name select-map)) " = ?")
                (:field-val select-map)]))
 
 (defn select-all-by-field
@@ -102,17 +102,14 @@
         where-col-val     (u/vec-map->vec-by-key cond-map-array :field-val)
         where-cond        (u/concat-vec->str-vec where-operation where-col-val)
         w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
-    (jdbc/update! db-spec
-                  (name table-name)
-                  update-record-map
-                  [w-cond])))
+    (jdbc/update! db-spec (name table-name) update-record-map [w-cond])))
 
 (defn delete-data
   "delete data from table with some condition"
-  [db-spec table-name cond-col cond-val]
+  [db-spec update-map]
   (jdbc/delete! db-spec
-                (name table-name)
-                [(str (name cond-col) " = ? ") cond-val]))
+                (name (:table-name update-map))
+                [(str (name (:field-name update-map)) " = ? ") (:field-val update-map)]))
 
 (defn delete-data-multi-cond
   "delete in the table (table-name-key) where conditions are in map cond-map-array"
@@ -130,7 +127,7 @@
 (defn get-all-users
   "List of all users"
   [db-spec]
-  (select-all db-spec {u/sel-n-upd-map :users}))
+  (select-all db-spec :users))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
@@ -295,7 +292,7 @@
 (defn get-all-games
   "Get collection of all games ever created"
   [db-spec]
-  (select-all db-spec (u/sel-n-upd-map :game)))
+  (select-all db-spec :game))
 
 ;;Получаем список игр с параметром isDeleted = false
 (defn get-all-active-games
@@ -303,18 +300,25 @@
   [db-spec]
   (select-all-by-field db-spec (u/sel-n-upd-map  :game :is_deleted false)))
 
-;;TODO: переписать на get-all-active-games иначе не понятно, зачем возвращать удаленные игры?
 ;;Получем список игр с параметром isPrivate = false
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (select-all-by-field db-spec (u/sel-n-upd-map :game :is_private false)))
+  (select-cols-multi-cond db-spec
+                          (u/sel-n-upd-map :game)
+                          ["*"]
+                          [{:field-name :is_private
+                            :operation "="
+                            :field-val false}
+                           {:field-name :is_active
+                            :operation "="
+                            :field-val true}]))
 
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
   [db-spec]
-  (select-all db-spec (u/sel-n-upd-map :game_type)))
+  (select-all db-spec :game_type))
 
 ;;Получаем список всех вариантов определенного типа игры
 (defn get-game-variants
@@ -414,18 +418,7 @@
     (last n-games)))
 
 ;; ================= ROOM ==================\
-;;(def room-table "room")
-;;(def room-users-table "room_users")
-;;(def chat-table "chat")
-;;(def chat-message-table "chat_message")
-;;(def room-active?-key :is_active)
-;;(def room-id-key :id_room)
-;;(def chat-id-key :id_chat)
-;;(def room-joined-key :dt_joined)
-;;(def room-left-key :dt_left)
-;;(def room-id-col "id_room")
 
-;;TODO: необходимо описать, как выглядит room-map
 ;;Создает новую комнату
 (defn create-room
   "Creates room for a certain game"
@@ -439,27 +432,48 @@
   (let [map {:is_active true}]
     (update-data db-spec map (u/sel-n-upd-map :room :id_room id-room))))
 
-;TODO: добавить второе условие (is_active = true)
-;;TODO: а зачем нужно узнавать список комнат, где играется определенная игра? Почему нет функции, которая просто дает список комнат? - имхо надо.
 ;;Получает список активных комнат конретной игры
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
-  (select-all-by-field db-spec (u/sel-n-upd-map :room :id_game id-game)))
+  (select-cols-multi-cond db-spec
+                          (u/sel-n-upd-map :room)
+                          ["*"]
+                          [{:field-name :id_game
+                            :operation "="
+                            :field-val id-game}
+                           {:field-name :is_active
+                            :operation "="
+                            :field-val true}]))
 
-;TODO: добавить второе условие (dt_left = nil)
+;TODO: точно ли не is EMPTY?
 ;;Получает текущий список пользователей в конкретной комнате
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (select-all-by-field db-spec (u/sel-n-upd-map:room_users :id_room id-room)))
+  (select-cols-multi-cond db-spec
+                          (u/sel-n-upd-map :room_users)
+                          ["*"]
+                          [{:field-name :id_room
+                            :operation "="
+                            :field-val id-room}
+                           {:field-name :dt_left
+                            :operation "="
+                            :field-val nil}]))
 
-;TODO: добавить второе услвоие (dt_closed = nil)
 ;;Получает чат комнаты
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
-  (select-all-by-field db-spec (u/sel-n-upd-map :chat :id_room id-room)))
+  (select-cols-multi-cond db-spec
+                          (u/sel-n-upd-map :chat)
+                          ["*"]
+                          [{:field-name :id_room
+                            :operation "="
+                            :field-val id-room}
+                           {:field-name :dt_closed
+                            :operation "="
+                            :field-val nil}]))
 
 ;;Добавляет пользователя в комнату
 (defn enter-room
@@ -470,13 +484,19 @@
              :dt_joined (u/now)}]
     (insert-data db-spec :room_users map)))
 
-;TODO: добавить второе усовие для update-data (id_user = id-user)
 ;;Убирает пользователя из комнаты (задавая dt-left)
 (defn leave-room
   "Removes user from a room (settind dt-left)"
   [db-spec id-user id-room]
   (let [map {:dt_left (u/now)}]
-    (update-data db-spec map (u/sel-n-upd-map :room_users :id_room id-room))))
+    (update-data db-spec map (u/sel-n-upd-map :room_users :id_room id-room)))
+  (update-data-multi-cond db-spec :game map
+                          [{:field-name :is_private
+                            :operation "="
+                            :field-val false}
+                           {:field-name :is_active
+                            :operation "="
+                            :field-val true}]))
 
 ;;Отправляет сообщение в чат
 (defn send-message
@@ -499,39 +519,38 @@
 (defn add-question
   "Adds question to a certain room from a certain user"
   [db-spec id-room id-user question]
-  (let [map {:id_room      id-room
-             :id_user      id-user
-             :message      question
-             :dt_created   (u/now)
-             :is_deleted   false}]
+  (let [map {:id_room    id-room
+             :id_user    id-user
+             :message    question
+             :dt_created (u/now)
+             :is_deleted false}]
     (insert-data db-spec :question map)))
 
-;TODO: реализовать функцию delete-question
 ;;Удаляет вопрос
 (defn delete-question
   "Removes question"
   [db-spec id-question]
-  (let [map {:is_deleted false}]
+  (let [map {:is_deleted true}]
     (update-data db-spec map (u/sel-n-upd-map :question :id_question id-question))))
 
 ;;Добавляет ответ на вопрос
 (defn answer-question
   "Asnwers a question"
   [db-spec id-question answer]
-  (let [map {:answer       answer
-             :dt_answered  (u/now)}]
+  (let [map {:answer      answer
+             :dt_answered (u/now)}]
     (update-data db-spec  map (u/sel-n-upd-map :question :id_question id-question))))
 
-;TODO: реализовать функцию delete-answer
 ;;Удаляет ответ на вопрос
 (defn delete-answer!
   "Removes answer"
-  [db-spec id-question])
+  [db-spec id-question]
+  (let [map {:is_deleted true}]
+    (update-data db-spec map (u/sel-n-upd-map :answer :id_question id-question))))
 
 ;;TODO: необходимо сделать функцию по получению n сообщений (вопросов, ответов, сообщений чата - пох чего)
 
 ;; ==== HighLevel-Functions ====
-;;TODO: реализация захода пользователя на сайт
 ;; сценарий №1: регистрация пользователя
 ;; проверить, что логин и email дейсвительные. если все ок, зарегистрировать пользователя
 (defn register-user!
@@ -578,7 +597,8 @@
       (create-user-session db-spec user-id); вернуть пользователю сессию
       (not login-correct?)
       {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " " (:login login-info) )}
+       :error-desc (str (:err-desc err/incorrect-user-login) " "
+                        (:login login-info) )}
       (not password-correct?)
       {:error-code (:err-code err/incorrect-user-passw)
       :error-desc (:err-desc err/incorrect-user-passw)}

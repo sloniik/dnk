@@ -116,7 +116,7 @@
     :col-name c-n
     :field-name ""
     :field-val ""})
-  ([t-n c-n f-v]
+  ([t-n f-n f-v]
    {:table-name t-n
     :col-name ""
     :field-name f-n
