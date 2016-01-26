@@ -188,6 +188,7 @@
               (k/where (= f-n f-v)))))
 (k-delete-data (u/sel-n-upd-map :users :user_name "devAer"))
 
+
 (defn delete-data-multi-cond
   "delete in the table (table-name-key) where conditions are in map cond-map-array"
   [db-spec table-name cond-map-array]
