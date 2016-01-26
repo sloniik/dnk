@@ -130,7 +130,7 @@
 (defn get-all-users
   "List of all users"
   [db-spec]
-  (select-all db-spec {u/sel-n-upd-map :users}))
+  (select-all db-spec (u/sel-n-upd-map :users)))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
@@ -452,7 +452,7 @@
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (select-all-by-field db-spec (u/sel-n-upd-map:room_users :id_room id-room)))
+  (select-all-by-field db-spec (u/sel-n-upd-map :room_users :id_room id-room)))
 
 ;TODO: добавить второе услвоие (dt_closed = nil)
 ;;Получает чат комнаты
