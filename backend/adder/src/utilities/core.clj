@@ -20,7 +20,9 @@
   (loop [v vec
          result-vec []]
       (if (nil? (key (first v)))
-        result-vec
+        (do
+          (println result-vec)
+          result-vec)
         (recur (drop 1 v)
                (conj result-vec (key (first v)))))))
 ;; test
@@ -35,8 +37,8 @@
       vstr
       (recur (drop 1 v)
              (if (nil? (first (drop 1 v)))
-               (str vstr (first v))
-               (str vstr (first v) str-delimiter))))))
+               (str vstr  (first v))
+               (str vstr  (first v) str-delimiter))))))
 ;;test
 (vec->str-with-delimiter [1 2 3] ", ")
 
@@ -71,9 +73,6 @@
           (conj vstr (str a " " b)))))))
 ;;test
 (concat-vec->str-vec ["=" ">" "like"] [1 "devArt" true])
-
-
-
 
 (defn concat-vec->str
   "concat two vectors with delimiter"

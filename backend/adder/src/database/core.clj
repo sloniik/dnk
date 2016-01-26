@@ -7,43 +7,71 @@
   (:require [clojure.java.jdbc :as jdbc]
             [jdbc.pool.c3p0 :as pool]
             [utilities.core :as u]
-            [database.errors :as err]))
+            [database.errors :as err]
+            [korma.core :as k]
+            [korma.db :as kdb]))
 
 
-(def db-spec {:classname   "com.mysql.jdbc.Driver"
-              :subprotocol "mysql"
-              :ssl?        false
-              :subname     "//127.0.0.1:3306/dnk_test"
-              :user        "dnk_test"
-              :password    "dnk_test"})
+;(def db-spec {:classname   "com.mysql.jdbc.Driver"
+;              :subprotocol "mysql"
+;              :ssl?        false
+;              :subname     "//127.0.0.1:3306/dnk_test"
+;              :user        "dnk_test"
+;              :password    "dnk_test"
+;              :make-pool?  true})
+
+(def db (kdb/mysql
+                {:classname   "com.mysql.jdbc.Driver"
+                 :subprotocol "mysql"
+                 :ssl?        false
+                 :subname     "//127.0.0.1:3306/dnk_test"
+                 :user        "dnk_test"
+                 :password    "dnk_test"
+                 :make-pool?  true}))
+(kdb/defdb korma-db db)
 
 ;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
-(defn pool
-  [spec]
-  (let [cpds (doto (ComboPooledDataSource.)
-               (.setDriverClass (:classname spec))
-               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
-               (.setUser (:user spec))
-               (.setPassword (:password spec))
-               ;; expire excess connections after 30 minutes of inactivity:
-               (.setMaxIdleTimeExcessConnections (* 30 60))
-               ;; expire connections after 3 hours of inactivity:
-               (.setMaxIdleTime (* 3 60 60)))]
-    {:datasource cpds}))
+;(defn pool
+;  [spec]
+;  (let [cpds (doto (ComboPooledDataSource.)
+;               (.setDriverClass (:classname spec))
+;               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
+;               (.setUser (:user spec))
+;               (.setPassword (:password spec))
+;               ;; expire excess connections after 30 minutes of inactivity:
+;               (.setMaxIdleTimeExcessConnections (* 30 60))
+;               ;; expire connections after 3 hours of inactivity:
+;               (.setMaxIdleTime (* 3 60 60)))]
+;    {:datasource cpds}))
 
-(def pooled-db  (pool db-spec))
+;(def pooled-db  (pool db-spec))
 
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col
   "return specific column from table"
   [db-spec select-map]
-    (jdbc/query db-spec [(str "select " (:col-name select-map)
-                              " from "  (:table-name select-map))]))
+    (jdbc/query db-spec [(str "select " (name (:col-name select-map))
+                              " from "  (name (:table-name select-map)))]))
+
+;;korma-mod
+(defn k-select-col
+  [select-map]
+  (let [t-n (:table-name select-map)
+        c-n (:col-name   select-map)]
+  (k/select t-n
+            (k/fields c-n))))
+;(k-select-col (u/sel-n-upd-map  :fruit :name))
 
 (defn select-all
   "return all values from table "
   [db-spec table-name]
   (select-col db-spec (u/sel-n-upd-map (name table-name) "*")))
+
+;;korma-mod
+(defn k-select-all
+  [table-name]
+  (k/select table-name))
+;(k-select-all :fruit)
 
 (defn select-col-by-field
   "return specific column from table where field-name = field-val"
@@ -53,6 +81,17 @@
                     " from "  (name (:table-name select-map))
                     " where " (name (:field-name select-map)) " = ?")
                (:field-val select-map)]))
+;;korma-mod
+(defn k-select-col-by-field
+  [select-map]
+  (let [t-n (:table-name select-map)
+        c-n (:col-name select-map)
+        f-n (:field-name select-map)
+        f-v (:field-val select-map)]
+    (k/select t-n
+              (k/fields c-n)
+              (k/where (= f-n f-v)))))
+(k-select-col-by-field  (u/sel-n-upd-map :fruit :name :cost 2000))
 
 (defn select-all-by-field
   "return all values from specified table with col-id-name and id-value"
@@ -61,6 +100,15 @@
                                                 "*"
                                                 (:field-name select-map)
                                                 (:field-val select-map))))
+;;korma-mod
+(defn k-select-all-by-field
+  [select-map]
+  (let [t-n (:table-name select-map)
+   f-n (:field-name select-map)
+   f-v (:field-val select-map)]
+  (k/select t-n
+            (k/where (= f-n f-v)))))
+;(k-select-all-by-field (u/sel-n-upd-map :users :id_user 2))
 
 (defn select-cols-multi-cond
   "on input:
@@ -86,6 +134,14 @@
                (name table-name)
                new-record-map))
 
+;;korma-mod
+(defn k-insert-data
+  [table-name new-record-map]
+  (k/insert table-name
+            (k/values new-record-map)))
+;(k-insert-data :fruit {:name "Забор" :appearance "Острый" :cost 100 :flag true})
+
+
 (defn update-data
   "update string (update-record-map) in the table (table-name-key) where update-cond-map (:table-name :field-name field-val)"
   [db-spec update-record-map update-cond-map]
@@ -93,6 +149,17 @@
                 (name (:table-name update-cond-map))
                 update-record-map
                 [(str (name (:field-name update-cond-map)) " = ? ") (:field-val update-cond-map)]))
+
+;;korma-mod
+(defn k-update-data
+  [update-record-map update-cond-map]
+  (let [t-n (:table-name update-cond-map)
+        f-n (:field-name update-cond-map)
+        f-v (:field-val update-cond-map)]
+      (k/update t-n
+                (k/set-fields update-record-map)
+                (k/where (= f-n f-v)))))
+;(k-update-data {:cost 2000} (u/sel-n-upd-map :fruit :id_name 14))
 
 (defn update-data-multi-cond
   "update string (update-record-map) in the table (table-name-key) where conditions are in map cond-map-array"
@@ -110,6 +177,16 @@
   (jdbc/delete! db-spec
                 (name (:table-name update-map))
                 [(str (name (:field-name update-map)) " = ? ") (:field-val update-map)]))
+
+;;korma-mod
+(defn k-delete-data
+  [update-map]
+  (let [t-n (:table-name update-map)
+        f-n (:field-name update-map)
+        f-v (:field-val update-map)]
+    (k/delete t-n
+              (k/where (= f-n f-v)))))
+(k-delete-data (u/sel-n-upd-map :users :user_name "devAer"))
 
 (defn delete-data-multi-cond
   "delete in the table (table-name-key) where conditions are in map cond-map-array"
@@ -605,3 +682,12 @@
       (not user-active?)
       {:error-code (:err-code err/inactive-user-error)
        :error-desc (:err-desc err/inactive-user-error)})))
+
+
+(defn selc
+  [table-name col-name text]
+  (k/select table-name
+             (k/where {col-name [like (str text "%")]})
+             ))
+
+(selc :fruit :name "Ca")

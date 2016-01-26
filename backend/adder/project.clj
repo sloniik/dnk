@@ -16,7 +16,8 @@
                  [clojure.jdbc/clojure.jdbc-hikari "0.3.3"]
                  [hikari-cp "1.5.0"]
                  [mysql/mysql-connector-java "5.1.38"]
-                 [clojure.jdbc/clojure.jdbc-c3p0 "0.3.2"]]
+                 [clojure.jdbc/clojure.jdbc-c3p0 "0.3.2"]
+                 [korma "0.4.2"]]
 
   :dev-dependencies
                 [[lein-run "1.2.1"]]
