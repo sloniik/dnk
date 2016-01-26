@@ -1,4 +1,5 @@
 (ns database.for-test
+  (use clojure.test)
   (:require [database.core :as db]
             [clojure.java.jdbc :as jdbc]
             [clojure.java.io :as io]
@@ -28,6 +29,9 @@
 ;      :multi? true
 ;      :transaction? true)))
 
+
+
+;;Пока не работает
 ;(exec-sql-file root-db-spec (io/resource "dnk.sql"))
 
 (def test-conn db/pooled-db)
@@ -36,7 +40,7 @@
                                       :password_hash "test1"
                                       :salt          "test1"
                                       :email         "test1@test.com"
-                                      :dt_created    "2016-01-01"
+                                      :dt_created    (u/now)
                                       :is_active     true
                                       :is_online     true
                                       :is_banned     true
@@ -46,7 +50,7 @@
                                       :password_hash "test2"
                                       :salt          "test2"
                                       :email         "test2@test.com"
-                                      :dt_created    "2016-01-01"
+                                      :dt_created    (u/now)
                                       :is_active     false
                                       :is_online     true
                                       :is_banned     true
@@ -56,7 +60,7 @@
                                       :password_hash "test2"
                                       :salt          "test2"
                                       :email         "test2@test.com"
-                                      :dt_created    "2016-01-01"
+                                      :dt_created    (u/now)
                                       :is_active     false
                                       :is_online     true
                                       :is_banned     true
@@ -66,11 +70,20 @@
                                       :password_hash "test2"
                                       :salt          "test2"
                                       :email         "test2@test.com"
-                                      :dt_created    "2016-01-01"
+                                      :dt_created    (u/now)
                                       :is_active     false
                                       :is_online     true
                                       :is_banned     true
                                       :is_admin      true}))
+
+(deftest user-creation
+  (is (= (:generated_key user1) 1))
+  (is (= (:generated_key user2) 2))
+  (is (= (:generated_key user3) 3))
+  (is (= (:generated_key user4) 4)))
+
+(deftest all-users
+  (is (db/get-all-users test-conn)))
 
 (db/select-cols-multi-cond test-conn
                            "users"
