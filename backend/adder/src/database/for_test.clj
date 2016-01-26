@@ -17,17 +17,18 @@
 
 (def root-conn (db/pool root-db-spec))
 
-(defn exec-sql-file
-  [db-spec file]
-  (let [commands (str/split
-                   (slurp file) #";")]
-    (println (take 2 commands))
-    (jdbc/execute!
-      db-spec
-      commands
-      :multi? true)))
+;(defn exec-sql-file
+;  [db-spec file]
+;  (let [commands (str/split
+;                   (slurp file) #";")]
+;    (println (take 2 commands))
+;    (jdbc/execute!
+;      db-spec
+;      commands
+;      :multi? true
+;      :transaction? true)))
 
-(exec-sql-file root-db-spec (io/resource "dnk.sql"))
+;(exec-sql-file root-db-spec (io/resource "dnk.sql"))
 
 (def test-conn db/pooled-db)
 
@@ -71,36 +72,24 @@
                                       :is_banned     true
                                       :is_admin      true}))
 
-
-
 (db/select-cols-multi-cond test-conn
                            "users"
                            ["id_user" "user_name" "salt"]
-                           [{:col-name "user_name" :operation "=" :col-val "test"}
-                            {:col-name "email" :operation "like" :col-val "abs%"}])
+                           [{:field-name "user_name" :operation "=" :field-val "test"}
+                            {:field-name "email" :operation "like" :field-val "abs%"}])
 
 ;; ==== other TESTs ====
 
-(jdbc/query test-conn
-            ["select name, cost from fruit where appearance = ?" "rosy"])
+(jdbc/query test-conn ["select name, cost from fruit where appearance = ?" "rosy"])
 
-(db/select-col test-conn "fruit" "cost")
+(db/select-col test-conn (u/sel-n-upd-map  "fruit" "cost"))
 (jdbc/query test-conn [(str "select name from fruit where cost = ?") 24])
-(db/select-col-by-field test-conn "fruit" "name" "cost" 24)
+(db/select-col-by-field test-conn (u/sel-n-upd-map "fruit" "name" "cost" 24))
 
 
 (db/select-all test-conn "fruit")
-(db/insert-data test-conn :fruit
-                {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
+(db/insert-data test-conn :fruit {:name "Cactus" :appearance "Spiky" :cost 2000 :flag true})
 
 
 ;; ==== TESTs ====
 ;;(db/select-all test-conn "fruit")
-
-;;(db/select-col-new test-conn "fruit" "name")
-
-;;(jdbc/query test-conn [(str "select " "*" " from " "fruit" " where " "cost" " = ?") "24"])
-
-;;(db/select-col test-conn "fruit" "cost")
-;;(jdbc/query test-conn [(str "select name from fruit where cost = ?") 24])
-;;(db/select-col-by-field test-conn "fruit" "name" "cost" 24)

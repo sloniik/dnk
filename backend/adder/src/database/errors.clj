@@ -10,6 +10,9 @@
 (def incorrect-user-passw   {:err-code '1003'
                              :err-desc "Password doesn't match"})
 
+(def inactive-user-error   {:err-code '1004'
+                             :err-desc "User email is not activated"})
+
 ;; ===== GAME ERRORS =====
 (def create-game-error      {:err-code '2001'
                              :err-desc "Can't create the following game "})

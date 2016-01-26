@@ -101,3 +101,28 @@
 (concat-vec->str [1 2 3] ["=?" "> ?" "like ?"] "and")
 (concat-vec->str ["user_name" "id_user"] ["=" "<"] "and")
 
+(defn sel-n-upd-map
+  "return map {:tabl-name
+               :col-name
+               :field-name
+               :field-val}"
+  ([t-n ]
+   {:table-name t-n
+    :col-name ""
+    :field-name ""
+    :field-val ""})
+  ([t-n c-n]
+   {:table-name t-n
+    :col-name c-n
+    :field-name ""
+    :field-val ""})
+  ([t-n c-n f-v]
+   {:table-name t-n
+    :col-name ""
+    :field-name f-n
+    :field-val f-v})
+  ([t-n c-n f-n f-v ]
+   {:table-name t-n
+    :col-name c-n
+    :field-name f-n
+    :field-val f-v}))
