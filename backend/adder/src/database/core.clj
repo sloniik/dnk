@@ -40,13 +40,15 @@
    table-name
    col-name]
     (jdbc/query db-spec [(str "select " (name col-name)
-                              "  from " (name table-name))]))
+                              " from "  (name table-name))]))
 
 (defn select-all
   "return all values from table "
   [db-spec
    table-name]
-  (select-col db-spec (name table-name) "*"))
+  (select-col db-spec
+              (name table-name)
+              "*"))
 
 (defn select-col-by-field
   "return specific column from table where field-name = field-val"
@@ -56,7 +58,7 @@
    field-val]
   (jdbc/query db-spec
               [(str "select " (name col-name)
-                    " from " (name table-name)
+                    " from "  (name table-name)
                     " where " (name field-name) " = ?") field-val]))
 
 (defn select-all-by-field
@@ -65,7 +67,11 @@
    table-name
    field-name
    field-val]
-  (select-col-by-field db-spec (name table-name) "*" (name field-name) field-val))
+  (select-col-by-field db-spec
+                       (name table-name)
+                       "*"
+                       (name field-name)
+                       field-val))
 
 (defn select-cols-multi-cond
   "on input:
@@ -146,7 +152,6 @@
         w-cond            (u/concat-vec->str where-col-names where-cond " and ")]
     (jdbc/delete! db-spec
                   (name table-name)
-                  update-record-map
                   [w-cond])))
 
 ;; ================ User functions ===================
@@ -220,8 +225,7 @@
 (defn get-current-user-session
   "Gets current session by certain user"
   [db-spec
-   user-id]
-  )
+   user-id])
 
 ;;Проверяем, что данный логин еще не занят
 (defn login-available?
@@ -264,6 +268,8 @@
   (insert-data
     db-spec :users user-map)
   )
+
+;; TODO написать функцию подтверждения email и "активации пользователя"
 
 ;;Меняет профиль пользователя
 (defn update-user-profile
@@ -463,13 +469,13 @@
 ;;(def room-left-key :dt_left)
 ;;(def room-id-col "id_room")
 
+;;TODO: необходимо описать, как выглядит room-map
 ;;Создает новую комнату
 (defn create-room
   "Creates room for a certain game"
   [db-spec
    room-map]
-  (insert-data db-spec :room room-map)
-  )
+  (insert-data db-spec :room room-map))
 
 ;;Удаляет комнату (ставит is-active = false)
 (defn kill-room
@@ -480,6 +486,7 @@
       db-spec :room map :id_room id-room)))
 
 ;TODO: добавить второе условие (is_active = true)
+;;TODO: а зачем нужно узнавать список комнат, где играется определенная игра? Почему нет функции, которая просто дает список комнат? - имхо надо.
 ;;Получает список активных комнат конретной игры
 (defn get-room-list
   "Get room list of certain game"
@@ -535,8 +542,7 @@
 (defn get-last-messages
   "Get list of n last messages in chat"
   [db-spec id-chat n]
-  (select-all-by-field db-spec :chat :id_chat id-chat)
-  )
+  (select-all-by-field db-spec :chat :id_chat id-chat))
 
 ;;Создает новый вопрос
 (defn add-question
@@ -562,7 +568,7 @@
 ;;Добавляет ответ на вопрос
 (defn answer-question
   "Asnwers a question"
-  [db-spec id-question  answer]
+  [db-spec id-question answer]
   (let [map (hash-map :answer       answer
                       :dt_answered  (u/now))]
     (update-data
@@ -570,6 +576,51 @@
 
 ;TODO: реализовать функцию delete-answer
 ;;Удаляет ответ на вопрос
-(defn delete-answer
+(defn delete-answer!
   "Removes answer"
   [db-spec id-question])
+
+;;TODO: необходимо сделать функцию по получению n сообщений (вопросов, ответов, сообщений чата - пох чего)
+
+;; ==== HighLevel-Functions ====
+;;TODO: реализация захода пользователя на сайт
+;; сценарий №1: регистрация пользователя
+;; проверить, что логин и email дейсвительные. если все ок, зарегистрировать пользователя
+(defn register-user!
+  "register user with login and/or email"
+  [db-spec user-info]
+  (let [login-correct? (login-available? db-spec (:login user-info))
+        email-correct? (email-registered? db-spec (:email user-info))]
+    (cond (and login-correct? email-correct?)
+          (create-user db-spec {:user_name       (:login user-info)
+                                :email           (:email user-info)
+                                :password_hash   (:password-hash user-info)
+                                :salt            (:salt user-info)
+                                :dt_created      (u/now)
+                                :is_active       false     ;при создании человек не активен, так как надо подтвердить email
+                                :is_banned       false
+                                :is_admin        false})
+          (not login-correct?)
+          {:error-code (:err-code err/incorrect-user-login)
+           :error-desc (str (:err-desc err/incorrect-user-login) " " (:login user-info) )}
+          (not email-correct?)
+          {:error-code (:err-code err/incorrect-user-email)
+           :error-desc (str (:err-desc err/incorrect-user-email) " " (:email user-info) )})))
+
+;; сценарий №2: вход пользователя по логину и паролю
+;; проверить, что логин и пароль дейсвительные. если все ок, отдать token пользователю
+(defn login-user
+  "login user with login-info - {:login :password-hash}"
+  [db-spec login-info]
+  (let [login-correct? (login-available? db-spec (:login login-info))                           ; флаг, что логин есть
+        user-id (:id_user (get-user-info db-spec (:login login-info) :login))                   ; user-id по login
+        password-correct? (password-match? db-spec user-id :login (:password-hash login-info))] ; флаг, что пароль подошел
+    (cond (and login-correct? password-correct?)
+          (create-user-session db-spec user-id); вернуть пользователю сессию
+          (not login-correct?)
+          {:error-code (:err-code err/incorrect-user-login)
+           :error-desc (str (:err-desc err/incorrect-user-login) " " (:login login-info) )}
+          (not password-correct?)
+          {:error-code (:err-code err/incorrect-user-passw)
+           :error-desc (:err-desc err/incorrect-user-passw)}
+          )))

@@ -2,7 +2,9 @@
   (:require [database.core :as db]
             [clojure.java.jdbc :as jdbc]
             [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [utilities.core :as u]
+            [database.errors :as err]))
 
 ;; ==== backend TESTs ====
 
@@ -11,7 +13,7 @@
                    :ssl?        false
                    :subname     "//127.0.0.1:3306/dnk_test"
                    :user        "root"
-                   :password    "root"})
+                   :password    "12345"})
 
 (def root-conn (db/pool root-db-spec))
 
@@ -19,54 +21,55 @@
   [db-spec file]
   (let [commands (str/split
                    (slurp file) #";")]
-  (jdbc/execute!
-    db-spec
-    commands
-    :multi? true)))
+    (println (take 2 commands))
+    (jdbc/execute!
+      db-spec
+      commands
+      :multi? true)))
 
 (exec-sql-file root-db-spec (io/resource "dnk.sql"))
 
-(def test-conn  db/pooled-db)
+(def test-conn db/pooled-db)
 
-(def user1 (db/create-user test-conn {:user_name "test1"
-                                 :password_hash  "test1"
-                                 :salt           "test1"
-                                 :email          "test1@test.com"
-                                 :dt_created     "2016-01-01"
-                                 :is_active      true
-                                 :is_online      true
-                                 :is_banned      true
-                                 :is_admin       true}))
+(def user1 (db/create-user test-conn {:user_name     "test1"
+                                      :password_hash "test1"
+                                      :salt          "test1"
+                                      :email         "test1@test.com"
+                                      :dt_created    "2016-01-01"
+                                      :is_active     true
+                                      :is_online     true
+                                      :is_banned     true
+                                      :is_admin      true}))
 
-(def user2 (db/create-user test-conn {:user_name "test2"
-                                 :password_hash  "test2"
-                                 :salt           "test2"
-                                 :email          "test2@test.com"
-                                 :dt_created     "2016-01-01"
-                                 :is_active      false
-                                 :is_online      true
-                                 :is_banned      true
-                                 :is_admin       true}))
+(def user2 (db/create-user test-conn {:user_name     "test2"
+                                      :password_hash "test2"
+                                      :salt          "test2"
+                                      :email         "test2@test.com"
+                                      :dt_created    "2016-01-01"
+                                      :is_active     false
+                                      :is_online     true
+                                      :is_banned     true
+                                      :is_admin      true}))
 
-(def user3 (db/create-user test-conn {:user_name "test2"
-                                 :password_hash  "test2"
-                                 :salt           "test2"
-                                 :email          "test2@test.com"
-                                 :dt_created     "2016-01-01"
-                                 :is_active      false
-                                 :is_online      true
-                                 :is_banned      true
-                                 :is_admin       true}))
+(def user3 (db/create-user test-conn {:user_name     "test2"
+                                      :password_hash "test2"
+                                      :salt          "test2"
+                                      :email         "test2@test.com"
+                                      :dt_created    "2016-01-01"
+                                      :is_active     false
+                                      :is_online     true
+                                      :is_banned     true
+                                      :is_admin      true}))
 
-(def user4 (db/create-user test-conn {:user_name "test2"
-                                 :password_hash  "test2"
-                                 :salt           "test2"
-                                 :email          "test2@test.com"
-                                 :dt_created     "2016-01-01"
-                                 :is_active      false
-                                 :is_online      true
-                                 :is_banned      true
-                                 :is_admin       true}))
+(def user4 (db/create-user test-conn {:user_name     "test2"
+                                      :password_hash "test2"
+                                      :salt          "test2"
+                                      :email         "test2@test.com"
+                                      :dt_created    "2016-01-01"
+                                      :is_active     false
+                                      :is_online     true
+                                      :is_banned     true
+                                      :is_admin      true}))
 
 
 
