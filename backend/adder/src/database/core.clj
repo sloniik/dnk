@@ -110,6 +110,7 @@
             (k/where (= f-n f-v)))))
 ;(k-select-all-by-field (u/sel-n-upd-map :users :id_user 2))
 
+;;==DEPRICATED
 (defn select-cols-multi-cond
   "on input:
     vector of columns to select
@@ -140,7 +141,6 @@
   (k/insert table-name
             (k/values new-record-map)))
 ;(k-insert-data :fruit {:name "Забор" :appearance "Острый" :cost 100 :flag true})
-
 
 (defn update-data
   "update string (update-record-map) in the table (table-name-key) where update-cond-map (:table-name :field-name field-val)"
@@ -186,7 +186,7 @@
         f-v (:field-val update-map)]
     (k/delete t-n
               (k/where (= f-n f-v)))))
-(k-delete-data (u/sel-n-upd-map :users :user_name "devAer"))
+;(k-delete-data (u/sel-n-upd-map :users :user_name "devAer"))
 
 (defn delete-data-multi-cond
   "delete in the table (table-name-key) where conditions are in map cond-map-array"
@@ -382,15 +382,18 @@
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (select-cols-multi-cond db-spec
-                          (u/sel-n-upd-map :game)
-                          ["*"]
-                          [{:field-name :is_private
-                            :operation "="
-                            :field-val false}
-                           {:field-name :is_active
-                            :operation "="
-                            :field-val true}]))
+  (k/select :game
+            (k/where {:is_private false
+                       :is_active true})))
+  ;(select-cols-multi-cond db-spec
+  ;                        (u/sel-n-upd-map :game)
+  ;                        ["*"]
+  ;                        [{:field-name :is_private
+  ;                          :operation "="
+  ;                          :field-val false}
+  ;                         {:field-name :is_active
+  ;                          :operation "="
+  ;                          :field-val true}]))
 
 ;;Получаем список всех типов игр
 (defn get-game-types
@@ -514,44 +517,53 @@
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
-  (select-cols-multi-cond db-spec
-                          (u/sel-n-upd-map :room)
-                          ["*"]
-                          [{:field-name :id_game
-                            :operation "="
-                            :field-val id-game}
-                           {:field-name :is_active
-                            :operation "="
-                            :field-val true}]))
+  (k/select :game
+            (k/where {:id_game id-game
+                      :is_active true})))
+  ;(select-cols-multi-cond db-spec
+  ;                        (u/sel-n-upd-map :room)
+  ;                        ["*"]
+  ;                        [{:field-name :id_game
+  ;                          :operation "="
+  ;                          :field-val id-game}
+  ;                         {:field-name :is_active
+  ;                          :operation "="
+  ;                          :field-val true}]))
 
 ;TODO: точно ли не is EMPTY?
 ;;Получает текущий список пользователей в конкретной комнате
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (select-cols-multi-cond db-spec
-                          (u/sel-n-upd-map :room_users)
-                          ["*"]
-                          [{:field-name :id_room
-                            :operation "="
-                            :field-val id-room}
-                           {:field-name :dt_left
-                            :operation "="
-                            :field-val nil}]))
+  (k/select :game
+            (k/where {:id_root id-room
+                      :dt_left nil})))
+  ;(select-cols-multi-cond db-spec
+  ;                        (u/sel-n-upd-map :room_users)
+  ;                        ["*"]
+  ;                        [{:field-name :id_room
+  ;                          :operation "="
+  ;                          :field-val id-room}
+  ;                         {:field-name :dt_left
+  ;                          :operation "="
+  ;                          :field-val nil}]))
 
 ;;Получает чат комнаты
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
-  (select-cols-multi-cond db-spec
-                          (u/sel-n-upd-map :chat)
-                          ["*"]
-                          [{:field-name :id_room
-                            :operation "="
-                            :field-val id-room}
-                           {:field-name :dt_closed
-                            :operation "="
-                            :field-val nil}]))
+  (k/select :game
+            (k/where {:id_room id-room
+                      :dt_closed nil})))
+  ;(select-cols-multi-cond db-spec
+  ;                        (u/sel-n-upd-map :chat)
+  ;                        ["*"]
+  ;                        [{:field-name :id_room
+  ;                          :operation "="
+  ;                          :field-val id-room}
+  ;                         {:field-name :dt_closed
+  ;                          :operation "="
+  ;                          :field-val nil}]))
 
 ;;Добавляет пользователя в комнату
 (defn enter-room
@@ -567,14 +579,7 @@
   "Removes user from a room (settind dt-left)"
   [db-spec id-user id-room]
   (let [map {:dt_left (u/now)}]
-    (update-data db-spec map (u/sel-n-upd-map :room_users :id_room id-room)))
-  (update-data-multi-cond db-spec :game map
-                          [{:field-name :is_private
-                            :operation "="
-                            :field-val false}
-                           {:field-name :is_active
-                            :operation "="
-                            :field-val true}]))
+    (update-data db-spec map (u/sel-n-upd-map :room_users :id_room id-room))))
 
 ;;Отправляет сообщение в чат
 (defn send-message
