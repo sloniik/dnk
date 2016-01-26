@@ -109,7 +109,8 @@ CREATE TABLE users
 	,`user_name` 		VARCHAR(250) 	NOT NULL 
 	,`password_hash` 	VARBINARY(1000) NOT NULL 
 	,`salt` 			VARCHAR(250) 	NOT NULL 
-	,`email` 			VARCHAR(250)  	NULL 
+	,`email` 			VARCHAR(250)  	NULL
+	,`email-code`       VARBINARY(1000) NULL
 	,`User_Story` 		VARCHAR(2048) 	NULL 
 	,`Phone_Number` 	VARCHAR(250)  	NULL 
 	,`User_Token` 		VARBINARY(1000) NULL 

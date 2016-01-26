@@ -2,17 +2,19 @@
   (:gen-class)
   (:use user-constuser-info.user-const :as us-in)
   (:use user-info.user-const :as uc)
-  (:use database.core :as db))
+  (:use database.core :as db)
+  (:import (java.util Date)))
 
 ;; Util functions
-(defn create-new-user [nickname email]
-  let [user-init-profile {:name nickname
-                          :email  email
-                          :active? false
-                          :ban? false
-                          :seen-last-time 0
-                          :registration-date java.util.Date}]
-  user-init-profile)
+(defn create-new-user
+  [nickname email]
+  (let [user-init-profile {:name              nickname
+                          :email             email
+                          :active?           false
+                          :ban?              false
+                          :seen-last-time    0
+                          :registration-date Date}]
+  user-init-profile))
 
 (defn user-exist?
   "checks if user already exist in database"
