@@ -8,17 +8,9 @@
             [jdbc.pool.c3p0 :as pool]
             [utilities.core :as u]
             [database.errors :as err]
-            [korma.core :as k]
+            [korma.core :refer [select fields where insert values update set-fields delete]]
             [korma.db :as kdb]))
 
-
-;(def db-spec {:classname   "com.mysql.jdbc.Dri 1 zver"
-;              :subprotocol "mysql"
-;              :ssl?        false
-;              :subname     "//127.0.0.1:3306/dnk_test"
-;              :user        "dnk_test"
-;              :password    "dnk_test"
-;              :make-pool?  true})
 
 (def db (kdb/mysql
                 {:classname   "com.mysql.jdbc.Driver"
@@ -29,22 +21,6 @@
                  :password    "dnk_test"
                  :make-pool?  true}))
 (kdb/defdb korma-db db)
-
-;http://clojure-doc.org/articles/ecosystem/java_jdbc/connection_pooling.html
-;(defn pool
-;  [spec]
-;  (let [cpds (doto (ComboPooledDataSource.)
-;               (.setDriverClass (:classname spec))
-;               (.setJdbcUrl (str "jdbc:" (:subprotocol spec) ":" (:subname spec)))
-;               (.setUser (:user spec))
-;               (.setPassword (:password spec))
-;               ;; expire excess connections after 30 minutes of inactivity:
-;               (.setMaxIdleTimeExcessConnections (* 30 60))
-;               ;; expire connections after 3 hours of inactivity:
-;               (.setMaxIdleTime (* 3 60 60)))]
-;    {:datasource cpds}))
-
-;(def pooled-db  (pool db-spec))
 
 ;; === MAIN_DB_FUNCTIONs ===
 (defn select-col
@@ -58,8 +34,8 @@
   [select-map]
   (let [t-n (:table-name select-map)
         c-n (:col-name   select-map)]
-  (k/select t-n
-            (k/fields c-n))))
+  (select t-n
+            (fields c-n))))
 ;(k-select-col (u/sel-n-upd-map  :fruit :name))
 
 (defn select-all
@@ -70,7 +46,7 @@
 ;;korma-mod
 (defn k-select-all
   [table-name]
-  (k/select table-name))
+  (select table-name))
 ;(k-select-all :fruit)
 
 (defn select-col-by-field
@@ -88,9 +64,9 @@
         c-n (:col-name select-map)
         f-n (:field-name select-map)
         f-v (:field-val select-map)]
-    (k/select t-n
-              (k/fields c-n)
-              (k/where (= f-n f-v)))))
+    (select t-n
+              (fields c-n)
+              (where (= f-n f-v)))))
 (k-select-col-by-field  (u/sel-n-upd-map :fruit :name :cost 2000))
 
 (defn select-all-by-field
@@ -106,8 +82,8 @@
   (let [t-n (:table-name select-map)
    f-n (:field-name select-map)
    f-v (:field-val select-map)]
-  (k/select t-n
-            (k/where (= f-n f-v)))))
+  (select t-n
+            (where (= f-n f-v)))))
 ;(k-select-all-by-field (u/sel-n-upd-map :users :id_user 2))
 
 ;;==DEPRICATED
@@ -138,8 +114,8 @@
 ;;korma-mod
 (defn k-insert-data
   [table-name new-record-map]
-  (k/insert table-name
-            (k/values new-record-map)))
+  (insert table-name
+            (values new-record-map)))
 ;(k-insert-data :fruit {:name "Забор" :appearance "Острый" :cost 100 :flag true})
 
 (defn update-data
@@ -156,9 +132,9 @@
   (let [t-n (:table-name update-cond-map)
         f-n (:field-name update-cond-map)
         f-v (:field-val update-cond-map)]
-      (k/update t-n
-                (k/set-fields update-record-map)
-                (k/where (= f-n f-v)))))
+      (update t-n
+                (set-fields update-record-map)
+                (where (= f-n f-v)))))
 ;(k-update-data {:cost 2000} (u/sel-n-upd-map :fruit :id_name 14))
 
 (defn update-data-multi-cond
@@ -184,8 +160,8 @@
   (let [t-n (:table-name update-map)
         f-n (:field-name update-map)
         f-v (:field-val update-map)]
-    (k/delete t-n
-              (k/where (= f-n f-v)))))
+    (delete t-n
+              (where (= f-n f-v)))))
 ;(k-delete-data (u/sel-n-upd-map :users :user_name "devAer"))
 
 (defn delete-data-multi-cond
@@ -200,169 +176,7 @@
                   (name table-name)
                   [w-cond])))
 
-;; ================ User functions ===================
-(defn get-all-users
-  "List of all users"
-  [db-spec]
-  (select-all db-spec :users))
 
-;;Получаем пользователя по id пользователя
-(defn get-user-info-by-id
-  "Get user by user-id"
-  [db-spec user-id]
-  (first (select-all-by-field db-spec (u/sel-n-upd-map :users :id_user user-id))))
-
-;;Получем пользователя по логину
-(defn get-user-info-by-login
-  "Get user by login"
-  [db-spec login]
-  (first (select-all-by-field db-spec (u/sel-n-upd-map :users :user_name login))))
-
-(defn get-user-info-by-mail
-  "Get user by user-id"
-  [db-spec user-mail]
-  (first (select-all-by-field db-spec (u/sel-n-upd-map :users :user_name user-mail))))
-
-;;Общая функция информации по пользователю  пользователя
-(defn get-user-info
-  "Get user info"
-  [db-spec id type]
-  (cond
-        (= type :login)
-        (get-user-info-by-login db-spec id)
-        (= type :email)
-        (get-user-info-by-mail db-spec id)
-        :default
-        (get-user-info-by-id db-spec id)))
-
-(defn get-user-salt
-  "Get user salt"
-  [db-spec id id-type]
-  (let [user-info (get-user-info db-spec id id-type)]
-    (:salt user-info)))
-
-(defn get-user-pass
-  "get user password hash"
-  [db-spec id id-type]
-  (let [user-info (get-user-info db-spec id id-type)]
-    (:password_hash user-info)))
-
-;;Получаем значения полей пользователя (кроме password и salt)
-(defn get-user-safe-info
-  "Get user by type key (id or login)"
-  [db-spec id id-type]
-  (let [user-info (get-user-info db-spec id id-type)]
-    (-> user-info
-        (dissoc :salt)
-        (dissoc :password-hash))))
-
-;TODO: реализовать функцию
-(def get-media-types
-  "Get all types of media available"
-  [db-spec])
-
-;TODO: реализовать функцию get-user-media
-(defn get-user-media
-  "Gets mediafiles of certaion type created by user"
-  [db-spec user-id id-type media-type])
-
-(defn get-all-user-sessions
-  "Gets all sessions, made by user"
-  [db-spec user-id]
-  (select-all-by-field db-spec (u/sel-n-upd-map :users :user_name user-id)))
-
-;TODO: реализовать функцию
-(defn get-current-user-session
-  "Gets current session by certain user"
-  [db-spec user-id])
-
-;;Проверяем, что данный логин еще не занят
-(defn login-available?
-  "Check whether login available"
-  [db-spec login]
-  (let [user-info (get-user-safe-info db-spec login :login)]
-    (if (nil? user-info)
-      true
-      false)))
-
-(defn email-registered?
-  "Check whether email is already registered"
-  [db-spec email]
-  (let [user-info (select-col-by-field db-spec (u/sel-n-upd-map :users :email :email email))]
-    (if (nil? user-info)
-      true
-      false)))
-
-;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
-(defn password-match?
-  "Check if hashed password in database matches calculated hash"
-  [db-spec id-user id-type password-hash]
-  (if (= password-hash (get-user-pass
-                         db-spec id-user id-type))
-    true
-    false))
-
-;;Создает нового пользователя
-(defn create-user
-  "Create new user"
-  [db-spec
-   user-map]
-  (:generated_key (first (insert-data db-spec :users user-map))))
-
-(defn send-email
-  "send email with code in the email body"
-  [email code]
-  code)
-
-(defn activate-user
-  "activate user after confirming email with code"
-  [email code]
-  (let [user-info (get-user-safe-info db-spec email :email)
-        user-id (:id_user user-info)]
-    (update-data db-spec
-                 {:is_active  true}
-                 (u/sel-n-upd-map :users :id_user user-id))))
-
-;;Меняет профиль пользователя
-(defn update-user-profile
-  "Updates user profile"
-  [db-spec id-user profile-map]
-  (update-data db-spec
-               profile-map
-               (u/sel-n-upd-map :users :id_user id-user)))
-
-;;Обновляем токен пользователя
-(defn update-user-token
-  "Updates token in table Users"
-  [db-spec id-user token]
-  (update-data db-spec
-               {:user_token token}
-               (u/sel-n-upd-map :users :id_user id-user)))
-
-(defn create-user-session
-  "Creates new user session"
-  [db-spec
-   id-user]
-  (let [user-map {:id_user id-user}]
-    (insert-data db-spec :user_session user-map)))
-
-;;Деактивирует пользователя. ставит в таблице Users is_active=false
-(defn deactivate-user
-  "Deactivates user (updating record in table Users"
-  [db-spec
-   id-user]
-  (update-data db-spec
-               {:is_active false}
-               (u/sel-n-upd-map :users :id_user id-user)))
-
-;;Банит пользователя, запрещая ему активность на сайте
-(defn ban-user
-  "Bans user blocking his activity"
-  [db-spec
-   id-user]
-  (update-data db-spec
-               {:is_banned true}
-               (u/sel-n-upd-map :users :id_user id-user)))
 
 ;;======================== Game  Functions =====================================
 
@@ -382,8 +196,8 @@
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (k/select :game
-            (k/where {:is_private false
+  (select :game
+            (where {:is_private false
                        :is_active true})))
   ;(select-cols-multi-cond db-spec
   ;                        (u/sel-n-upd-map :game)
@@ -517,8 +331,8 @@
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
-  (k/select :game
-            (k/where {:id_game id-game
+  (select :game
+            (where {:id_game id-game
                       :is_active true})))
   ;(select-cols-multi-cond db-spec
   ;                        (u/sel-n-upd-map :room)
@@ -535,8 +349,8 @@
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (k/select :game
-            (k/where {:id_root id-room
+  (select :game
+            (where {:id_root id-room
                       :dt_left nil})))
   ;(select-cols-multi-cond db-spec
   ;                        (u/sel-n-upd-map :room_users)
@@ -552,8 +366,8 @@
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
-  (k/select :game
-            (k/where {:id_room id-room
+  (select :game
+            (where {:id_room id-room
                       :dt_closed nil})))
   ;(select-cols-multi-cond db-spec
   ;                        (u/sel-n-upd-map :chat)
@@ -692,8 +506,8 @@
 
 (defn selc
   [table-name col-name text]
-  (k/select table-name
-             (k/where {col-name [like (str text "%")]})
+  (select table-name
+             (where {col-name [like (str text "%")]})
              ))
 
 (selc :fruit :name "Ca")

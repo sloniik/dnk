@@ -1,5 +1,9 @@
 (ns database.errors)
 
+;; ===== COMMON ERRORS ====
+(def illegal-argument {:err-code '0001'
+                       :err-desc "This argument cannot be proceded by function"})
+
 ;; ===== USER ERRORS =====
 (def incorrect-user-login   {:err-code '1001'
                              :err-desc "This login is already taken"})
