@@ -48,22 +48,50 @@
 
 (defn get-user-pass
   "get user password hash"
-  [db-spec id id-type]
-  (let [user-info (get-user-info-by-id id)]
-    (:password_hash user-info)))
-
-;;Получаем значения полей пользователя (кроме password и salt)
-(defn get-user-safe-info
-  "Get user by type key (id or login)"
   [id]
   (let [user-info (get-user-info-by-id id)]
-    (-> user-info
-        (dissoc :salt)
-        (dissoc :password-hash))))
+    (:password_hash (first user-info))))
 
-(def get-media-types
-  "Get all types of media available"
+;;;Получаем значения полей пользователя (кроме password и salt)
+;(defn get-user-safe-info
+;  "Get user by type key (id or login)"
+;  [id]
+;  (let [user-info (get-user-info-by-id id)]
+;    (-> user-info
+;        (dissoc :salt)
+;        (dissoc :password-hash))))
+
+(defn get-media-types
+  "Get active types of media available"
+  (k/select :media_type
+            (k/where {:is_active true})))
+
+(defn get-all-media-types
+  "Get all media types"
   (k/select :media_type))
+
+(defn get-media-type-by-id
+  "Get media type with certain ID"
+  [id]
+  (k/select :media_type
+            (k/where {:id_media_type id})))
+
+(defn add-media-type
+  "Adds new media type"
+  [map]
+  (k/insert :media_type map))
+
+(defn update-media-type-name
+  [type-id new-name]
+  (k/update :media_type
+            (k/set-fields {:media_type_name new-name})
+            (k/where {:id_media_type type-id})))
+
+(defn delete-media-type
+  [type-id]
+  (k/update :media_type
+            (k/set-fields {:is_active false})
+            (k/where {:id_media_type type-id})))
 
 (defn get-user-media
   "Gets mediafiles of certaion type created by user"
@@ -110,9 +138,8 @@
 ;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
 (defn password-match?
   "Check if hashed password in database_test matches calculated hash"
-  [db-spec id-user id-type password-hash]
-  (if (= password-hash (get-user-pass
-                         db-spec id-user id-type))
+  [id-user password-hash]
+  (if (= password-hash (get-user-pass id-user))
     true
     false))
 
@@ -227,7 +254,7 @@
   (let [login-correct? (login-available? (:login login-info))
         user-info (get-user-info-by-login (:login login-info))
         user-id (:id_user user-info)
-        password-correct? (password-match? db-spec user-id :login (:password-hash login-info))
+        password-correct? (password-match? user-id (:password-hash login-info))
         user-active? (:is_active user-info)]
     (cond
       (and login-correct? password-correct? user-active?)

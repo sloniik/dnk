@@ -5,7 +5,7 @@ CREATE TABLE user_session
 (
 	`id_user_session` 	BIGINT 			NOT NULL AUTO_INCREMENT
 	,`id_user` 			BIGINT 			NOT NULL
-	,`session_token` 	VARBINARY(1000) NOT NULL
+	,`session_token` 	CHAR(64) 		NOT NULL
 	,`dt_session_start` DATETIME 		NOT NULL
 	,`dt_session_end` 	DATETIME  		NULL
 	,PRIMARY KEY (id_user_session)
@@ -14,11 +14,11 @@ ENGINE=INNODB;
 -- Create Table: game_access
 CREATE TABLE game_access
 (
-	`id_game` 			BIGINT 			NOT NULL 
-	,`id_user` 			BIGINT 			NOT NULL 
-	,`is_active` 		BIT 			NOT NULL 
-	,`dt_granted` 		DATETIME 		NOT NULL 
-	,`dt_revoked` 		DATETIME  		NULL 
+	`id_game` 			BIGINT 			NOT NULL
+	,`id_user` 			BIGINT 			NOT NULL
+	,`is_active` 		BIT 			NOT NULL
+	,`dt_granted` 		DATETIME 		NOT NULL
+	,`dt_revoked` 		DATETIME  		NULL
 	,PRIMARY KEY (id_game, id_user)
 )
 ENGINE=INNODB;
@@ -26,15 +26,15 @@ ENGINE=INNODB;
 CREATE TABLE room
 (
 	`id_room` 			BIGINT 			NOT NULL AUTO_INCREMENT
-	,`id_game` 			BIGINT 			NOT NULL 
-	,`id_user_master` 	BIGINT 			NOT NULL 
-	,`title` 			VARCHAR(250) 	NOT NULL 
-	,`is_private` 		BIT 			NOT NULL 
-	,`has_chat` 		BIT 			NOT NULL 
-	,`id_game_Variant` 	INT 			NOT NULL 
-	,`dt_start` 		DATETIME 		NOT NULL 
-	,`dt_end` 			DATETIME  		NULL 
-	,`is_active` 		BIT 			NOT NULL 
+	,`id_game` 			BIGINT 			NOT NULL
+	,`id_user_master` 	BIGINT 			NOT NULL
+	,`title` 			VARCHAR(250) 	NOT NULL
+	,`is_private` 		BIT 			NOT NULL
+	,`has_chat` 		BIT 			NOT NULL
+	,`id_game_Variant` 	INT 			NOT NULL
+	,`dt_start` 		DATETIME 		NOT NULL
+	,`dt_end` 			DATETIME  		NULL
+	,`is_active` 		BIT 			NOT NULL
 	,PRIMARY KEY (id_room)
 )
 ENGINE=INNODB;
@@ -42,16 +42,16 @@ ENGINE=INNODB;
 CREATE TABLE game_variant
 (
 	`id_game_variant` 	INT 			NOT NULL AUTO_INCREMENT
-	,`id_game_type` 	INT 			NOT NULL 
+	,`id_game_type` 	INT 			NOT NULL
 	,PRIMARY KEY (id_game_variant)
 )
 ENGINE=INNODB;
 -- Create Table: room_users
 CREATE TABLE room_users
 (
-	`id_room` 			BIGINT 			NOT NULL 
-	,`id_user` 			BIGINT 			NOT NULL 
-	,`dt_joined` 		DATETIME 		NOT NULL 
+	`id_room` 			BIGINT 			NOT NULL
+	,`id_user` 			BIGINT 			NOT NULL
+	,`dt_joined` 		DATETIME 		NOT NULL
     ,`dt_left`			DATETIME		NULL
 	,PRIMARY KEY (id_room, id_user)
 )
@@ -60,27 +60,27 @@ ENGINE=INNODB;
 CREATE TABLE game
 (
 	`id_game` 				BIGINT 			NOT NULL AUTO_INCREMENT
-	,`id_user_author` 		BIGINT 			NOT NULL 
-	,`id_game_variant` 		INT 			NOT NULL 
-	,`title` 				VARCHAR(250) 	NOT NULL 
-	,`description` 			VARCHAR(2500) 	NOT NULL 
-	,`dt_created` 			DATETIME 		NOT NULL 
-	,`game_solution` 		VARCHAR(2500) 	NOT NULL 
-	,`is_fork` 				BIT 			NOT NULL 
-	,`id_original` 			BIGINT  		NULL 
-	,`is_deleted` 			BIT 			NOT NULL 
-	,`expected_duration`	INT 			NULL 
-	,`preferable_user_num` 	INT  			NULL 
-	,`is_private` 			BIT 			NOT NULL 
+	,`id_user_author` 		BIGINT 			NOT NULL
+	,`id_game_variant` 		INT 			NOT NULL
+	,`title` 				VARCHAR(250) 	NOT NULL
+	,`description` 			VARCHAR(2500) 	NOT NULL
+	,`dt_created` 			DATETIME 		NOT NULL
+	,`game_solution` 		VARCHAR(2500) 	NOT NULL
+	,`is_fork` 				BIT 			NOT NULL
+	,`id_original` 			BIGINT  		NULL
+	,`is_deleted` 			BIT 			NOT NULL
+	,`expected_duration`	INT 			NULL
+	,`preferable_user_num` 	INT  			NULL
+	,`is_private` 			BIT 			NOT NULL
 	,PRIMARY KEY (id_game)
 )
 ENGINE=INNODB;
 -- Create Table: game_media
 CREATE TABLE game_media
 (
-	`id_game_media` 		BIGINT 			NOT NULL AUTO_INCREMENT
-	,`id_game`			BIGINT 			NOT NULL 
-	,`file_path` 		VARCHAR(250) 	NOT NULL 
+	`id_game_media` 	BIGINT 			NOT NULL AUTO_INCREMENT
+	,`id_game`			BIGINT 			NOT NULL
+	,`file_path` 		VARCHAR(250) 	NOT NULL
 	,PRIMARY KEY (id_game_media)
 )
 ENGINE=INNODB;
@@ -88,16 +88,16 @@ ENGINE=INNODB;
 CREATE TABLE game_type
 (
 	`id_game_type` 		INT 			NOT NULL AUTO_INCREMENT
-	,`type_name` 		VARCHAR(250) 	NOT NULL 
+	,`type_name` 		VARCHAR(250) 	NOT NULL
 	,PRIMARY KEY (id_game_type)
 )
 ENGINE=INNODB;
 -- Create Table: game_users
 CREATE TABLE game_users
 (
-	`id_game` 			BIGINT 			NOT NULL 
-	,`id_user` 			BIGINT 			NOT NULL 
-	,`dt_joined` 		DATETIME 		NOT NULL 
+	`id_game` 			BIGINT 			NOT NULL
+	,`id_user` 			BIGINT 			NOT NULL
+	,`dt_joined` 		DATETIME 		NOT NULL
 	,PRIMARY KEY (id_game, id_user)
 )
 ENGINE=INNODB;
@@ -106,20 +106,20 @@ ENGINE=INNODB;
 CREATE TABLE users
 (
 	`id_user` 			BIGINT 			NOT NULL AUTO_INCREMENT
-	,`user_name` 		VARCHAR(250) 	NOT NULL 
-	,`password_hash` 	VARBINARY(1000) NOT NULL 
-	,`salt` 			VARCHAR(250) 	NOT NULL 
+	,`user_name` 		VARCHAR(250) 	NOT NULL
+	,`password_hash` 	CHAR(64) 		NOT NULL
+	,`salt` 			VARCHAR(250) 	NOT NULL
 	,`email` 			VARCHAR(250)  	NULL
-	,`email-code`       VARBINARY(1000) NULL
-	,`User_Story` 		VARCHAR(2048) 	NULL 
-	,`Phone_Number` 	VARCHAR(250)  	NULL 
-	,`User_Token` 		VARBINARY(1000) NULL 
-	,`id_user_Session` 	BIGINT  		NULL 
-	,`dt_Created` 		DATETIME 		NOT NULL 
-	,`is_Online` 		BIT 			NOT NULL 
-	,`is_Active`		BIT 			NOT NULL 
+	,`email-code`       CHAR(64) 		NULL
+	,`User_Story` 		VARCHAR(2048) 	NULL
+	,`Phone_Number` 	VARCHAR(250)  	NULL
+	,`User_Token` 		CHAR(64) 		NULL
+	,`id_user_Session` 	BIGINT  		NULL
+	,`dt_Created` 		DATETIME 		NOT NULL
+	,`is_Online` 		BIT 			NOT NULL
+	,`is_Active`		BIT 			NOT NULL
     ,`is_banned`		BIT				NOT NULL
-	,`is_Admin` 		BIT 			NOT NULL 
+	,`is_Admin` 		BIT 			NOT NULL
 	,PRIMARY KEY (id_user)
 )
 ENGINE=INNODB;
@@ -127,11 +127,11 @@ ENGINE=INNODB;
 -- ------------------------------------------------------------------------------
 CREATE TABLE room_access
 (
-	`id_room` 			BIGINT 			NOT NULL 
-	,`id_user` 			BIGINT 			NOT NULL 
-	,`is_Active` 		BIT 			NOT NULL 
-	,`dt_Granted` 		DATETIME 		NOT NULL 
-	,`dt_Revoked` 		DATETIME  		NULL 
+	`id_room` 			BIGINT 			NOT NULL
+	,`id_user` 			BIGINT 			NOT NULL
+	,`is_Active` 		BIT 			NOT NULL
+	,`dt_Granted` 		DATETIME 		NOT NULL
+	,`dt_Revoked` 		DATETIME  		NULL
 	,PRIMARY KEY (id_room,id_user)
 )
 ENGINE=INNODB;
@@ -139,9 +139,9 @@ ENGINE=INNODB;
 -- ------------------------------------------------------------------------------
 CREATE TABLE chat_User
 (
-	`id_chat` 			BIGINT 			NOT NULL 
-	,`id_user` 			BIGINT 			NOT NULL 
-	,`dt_Joined` 		DATETIME 		NOT NULL 
+	`id_chat` 			BIGINT 			NOT NULL
+	,`id_user` 			BIGINT 			NOT NULL
+	,`dt_Joined` 		DATETIME 		NOT NULL
 	,PRIMARY KEY (id_chat,id_user)
 )
 ENGINE=INNODB;
@@ -150,7 +150,8 @@ ENGINE=INNODB;
 CREATE TABLE Media_Type
 (
 	`id_Media_Type` 	INT 			NOT NULL AUTO_INCREMENT
-	,`Media_Type_Name`	VARCHAR(250) 	NOT NULL 
+	,`Media_Type_Name`	VARCHAR(250) 	NOT NULL
+    ,`is_actve` 		BIT 			NOT NULL
 	,PRIMARY KEY (id_Media_Type)
 )
 ENGINE=INNODB;
@@ -159,9 +160,9 @@ ENGINE=INNODB;
 CREATE TABLE User_Media
 (
 	`id_user_Media` 	BIGINT  		NOT NULL AUTO_INCREMENT
-	,`id_user` 			BIGINT 			NOT NULL 
+	,`id_user` 			BIGINT 			NOT NULL
 	,`id_Media_Type` 	INT 			NOT NULL
-	,`File_Path` VARCHAR(1024) NOT NULL 
+	,`File_Path` 		VARCHAR(1024) 	NOT NULL
     ,PRIMARY KEY (id_user_media)
 )
 ENGINE=INNODB;

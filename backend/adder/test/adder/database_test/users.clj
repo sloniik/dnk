@@ -167,3 +167,18 @@
   (is (= (get-user-salt id-user5)
          (:salt user5-map)))
   )
+
+(deftest get-user-pass-test
+  (is (= (get-user-pass id-user1)
+         (:password_hash user1-map)))
+  (is (= (get-user-pass id-user2)
+         (:password_hash user2-map)))
+  (is (= (get-user-pass id-user3)
+         (:password_hash user3-map)))
+  (is (= (get-user-pass id-user4)
+         (:password_hash user4-map)))
+  (is (= (get-user-pass id-user5)
+         (:password_hash user5-map)))
+  )
+
+(def test-media1 )
