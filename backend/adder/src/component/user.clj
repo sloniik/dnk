@@ -17,7 +17,7 @@
   user-init-profile))
 
 (defn user-exist?
-  "checks if user already exist in database"
+  "checks if user already exist in database_test"
   [login]
   (let [u-l (get-list-of-user-logins (db/get-user-list))]
     (util/elem-in-col? login u-l)))
@@ -61,7 +61,7 @@
 ;; protocol description
 (defprotocol UserManagerProtocol
   (create-user [this nickname email]
-    "create user in database.
+    "create user in database_test.
     return map  {:status :details}.")
 
   (change-profile-basic-info [this user-profile-data]
@@ -81,7 +81,7 @@
     return map  {:status :details}.")
 
   (get-user-list [this]
-  "get user list from database
+  "get user list from database_test
   get conn
   return coll of map {:status
                       :details {:nick-name :active? :ban? :seen-last-time :registration-date}}")

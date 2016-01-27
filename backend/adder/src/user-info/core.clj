@@ -26,13 +26,13 @@
   (map #(get % login-key-word ) u-l))
 
 (defn user-exist?
-  "checks if user already exist in database"
+  "checks if user already exist in database_test"
   [login]
   (let [u-l (get-list-of-user-logins (db/get-user-list))]
     (util/elem-in-col? login u-l)))
 
 (defn create-user!
-  "creates user in database"
+  "creates user in database_test"
   [params]
   (if (user-exist? (:login params)
     {:status 101

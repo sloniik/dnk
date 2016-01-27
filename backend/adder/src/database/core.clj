@@ -8,7 +8,7 @@
             [jdbc.pool.c3p0 :as pool]
             [utilities.core :as u]
             [database.errors :as err]
-            [korma.core :refer [select fields where insert values update set-fields delete]]
+            [korma.core :as k]
             [korma.db :as kdb]))
 
 
@@ -34,9 +34,8 @@
   [select-map]
   (let [t-n (:table-name select-map)
         c-n (:col-name   select-map)]
-  (select t-n
-            (fields c-n))))
-;(k-select-col (u/sel-n-upd-map  :fruit :name))
+  (k/select t-n
+            (k/fields c-n))))
 
 (defn select-all
   "return all values from table "
@@ -46,8 +45,7 @@
 ;;korma-mod
 (defn k-select-all
   [table-name]
-  (select table-name))
-;(k-select-all :fruit)
+  (k/select table-name))
 
 (defn select-col-by-field
   "return specific column from table where field-name = field-val"
@@ -64,10 +62,10 @@
         c-n (:col-name select-map)
         f-n (:field-name select-map)
         f-v (:field-val select-map)]
-    (select t-n
-              (fields c-n)
-              (where (= f-n f-v)))))
-(k-select-col-by-field  (u/sel-n-upd-map :fruit :name :cost 2000))
+    (k/select t-n
+              (k/fields c-n)
+              (k/where (= f-n f-v)))))
+;(k-select-col-by-field  (u/sel-n-upd-map :fruit :name :cost 2000))
 
 (defn select-all-by-field
   "return all values from specified table with col-id-name and id-value"
@@ -82,8 +80,8 @@
   (let [t-n (:table-name select-map)
    f-n (:field-name select-map)
    f-v (:field-val select-map)]
-  (select t-n
-            (where (= f-n f-v)))))
+  (k/select t-n
+            (k/where (= f-n f-v)))))
 ;(k-select-all-by-field (u/sel-n-upd-map :users :id_user 2))
 
 ;;==DEPRICATED
@@ -114,8 +112,8 @@
 ;;korma-mod
 (defn k-insert-data
   [table-name new-record-map]
-  (insert table-name
-            (values new-record-map)))
+  (k/insert table-name
+            (k/values new-record-map)))
 ;(k-insert-data :fruit {:name "Забор" :appearance "Острый" :cost 100 :flag true})
 
 (defn update-data
@@ -132,9 +130,9 @@
   (let [t-n (:table-name update-cond-map)
         f-n (:field-name update-cond-map)
         f-v (:field-val update-cond-map)]
-      (update t-n
-                (set-fields update-record-map)
-                (where (= f-n f-v)))))
+      (k/update t-n
+                (k/set-fields update-record-map)
+                (k/where (= f-n f-v)))))
 ;(k-update-data {:cost 2000} (u/sel-n-upd-map :fruit :id_name 14))
 
 (defn update-data-multi-cond
@@ -160,8 +158,8 @@
   (let [t-n (:table-name update-map)
         f-n (:field-name update-map)
         f-v (:field-val update-map)]
-    (delete t-n
-              (where (= f-n f-v)))))
+    (k/delete t-n
+              (k/where (= f-n f-v)))))
 ;(k-delete-data (u/sel-n-upd-map :users :user_name "devAer"))
 
 (defn delete-data-multi-cond
@@ -196,8 +194,8 @@
 (defn get-all-public-games
   "Get collection of all non-private games"
   [db-spec]
-  (select :game
-            (where {:is_private false
+  (k/select :game
+            (k/where {:is_private false
                        :is_active true})))
   ;(select-cols-multi-cond db-spec
   ;                        (u/sel-n-upd-map :game)
@@ -331,8 +329,8 @@
 (defn get-room-list
   "Get room list of certain game"
   [db-spec id-game]
-  (select :game
-            (where {:id_game id-game
+  (k/select :game
+            (k/where {:id_game id-game
                       :is_active true})))
   ;(select-cols-multi-cond db-spec
   ;                        (u/sel-n-upd-map :room)
@@ -349,35 +347,17 @@
 (defn get-users-in-room
   "Gets list of users in certain room"
   [db-spec id-room]
-  (select :game
-            (where {:id_root id-room
+  (k/select :game
+            (k/where {:id_root id-room
                       :dt_left nil})))
-  ;(select-cols-multi-cond db-spec
-  ;                        (u/sel-n-upd-map :room_users)
-  ;                        ["*"]
-  ;                        [{:field-name :id_room
-  ;                          :operation "="
-  ;                          :field-val id-room}
-  ;                         {:field-name :dt_left
-  ;                          :operation "="
-  ;                          :field-val nil}]))
 
 ;;Получает чат комнаты
 (defn get-chat
   "Gets chat of a certain room"
   [db-spec id-room]
-  (select :game
-            (where {:id_room id-room
+  (k/select :game
+            (k/where {:id_room id-room
                       :dt_closed nil})))
-  ;(select-cols-multi-cond db-spec
-  ;                        (u/sel-n-upd-map :chat)
-  ;                        ["*"]
-  ;                        [{:field-name :id_room
-  ;                          :operation "="
-  ;                          :field-val id-room}
-  ;                         {:field-name :dt_closed
-  ;                          :operation "="
-  ;                          :field-val nil}]))
 
 ;;Добавляет пользователя в комнату
 (defn enter-room
@@ -447,67 +427,13 @@
 
 ;;TODO: необходимо сделать функцию по получению n сообщений (вопросов, ответов, сообщений чата - пох чего)
 
-;; ==== HighLevel-Functions ====
-;; сценарий №1: регистрация пользователя
-;; проверить, что логин и email дейсвительные. если все ок, зарегистрировать пользователя
-(defn register-user!
-  "register user with login and/or email
-  (= pasword password-repeat) was checked on the client side
-  (salt) was generated on the client side
-  (password-hash) was generated on the client side"
-  [db-spec user-info]
-  (let [login-correct? (login-available? db-spec (:login user-info))
-        email-correct? (email-registered? db-spec (:email user-info))
-        code u/get-uuid]
-    (cond
-      (and login-correct? email-correct?)
-      (do
-        (create-user db-spec {:user_name     (:login user-info)
-                              :email         (:email user-info)
-                              :password_hash (:password-hash user-info)
-                              :salt          (:salt user-info)
-                              :dt_created    (u/now)
-                              :is_active     false   ;при создании человек не активен, так как надо подтвердить email
-                              :is_banned     false
-                              :is_admin      false
-                              :email_code    code})  ; код верификации email
-        (send-email (:email user-info) code))
-      (not login-correct?)
-      {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " " (:login user-info) )}
-      (not email-correct?)
-      {:error-code (:err-code err/incorrect-user-email)
-       :error-desc (str (:err-desc err/incorrect-user-email) " " (:email user-info) )})))
-
-;; сценарий №2: вход пользователя по логину и паролю
-;; проверить, что логин и пароль дейсвительные. если все ок, отдать token пользователю
-(defn login-user
-  "login user with login-info - {:login :password-hash}"
-  [db-spec login-info]
-  (let [login-correct? (login-available? db-spec (:login login-info))
-        user-info (get-user-info db-spec (:login login-info) :login)
-        user-id (:id_user user-info)
-        password-correct? (password-match? db-spec user-id :login (:password-hash login-info))
-        user-active? (:is_active user-info)]
-    (cond
-      (and login-correct? password-correct? user-active?)
-      (create-user-session db-spec user-id); вернуть пользователю сессию
-      (not login-correct?)
-      {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " "
-                        (:login login-info) )}
-      (not password-correct?)
-      {:error-code (:err-code err/incorrect-user-passw)
-      :error-desc (:err-desc err/incorrect-user-passw)}
-      (not user-active?)
-      {:error-code (:err-code err/inactive-user-error)
-       :error-desc (:err-desc err/inactive-user-error)})))
 
 
-(defn selc
-  [table-name col-name text]
-  (select table-name
-             (where {col-name [like (str text "%")]})
-             ))
 
-(selc :fruit :name "Ca")
+;(defn selc
+;  [table-name col-name text]
+;  (k/select table-name
+;             (k/where {col-name [like (str text "%")]})
+;             ))
+;
+;(selc :fruit :name "Ca")
