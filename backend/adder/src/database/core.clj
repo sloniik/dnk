@@ -11,6 +11,8 @@
             [korma.core :as k]
             [korma.db :as kdb]))
 
+;(defn -main [& args]
+;  (println "Working!"))
 
 (def db (kdb/mysql
                 {:classname   "com.mysql.jdbc.Driver"

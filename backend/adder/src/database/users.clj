@@ -6,7 +6,6 @@
             [korma.core :as k]
             [korma.db :as kdb]))
 
-
 ;TODO: дописать entity
 (k/defentity users
              (k/pk :id_user)
@@ -63,11 +62,13 @@
 
 (defn get-media-types
   "Get active types of media available"
+  []
   (k/select :media_type
             (k/where {:is_active true})))
 
 (defn get-all-media-types
   "Get all media types"
+  []
   (k/select :media_type))
 
 (defn get-media-type-by-id
@@ -79,7 +80,8 @@
 (defn add-media-type
   "Adds new media type"
   [map]
-  (:generated_key (k/insert :media_type map)))
+  (:generated_key (k/insert :media_type
+                            (k/values map))))
 
 (defn update-media-type-name
   [type-id new-name]
@@ -93,12 +95,14 @@
             (k/set-fields {:is_active false})
             (k/where {:id_media_type type-id})))
 
+;;TODO: функция должна возращать файл, а не путь к файлу? Может так и назвать функцию или доописать
 (defn get-user-media
   "Gets mediafiles of certaion type created by user"
   [user-id]
   (k/select :user_media
             (k/where {:id_user user-id})))
 
+;;TODO: обсудили, что у пользователя может быть только аватар - смысл в функции?
 (defn get-user-media-by-type
   "Get media by selected user and selected type"
   [user-id type-id]

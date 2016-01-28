@@ -181,4 +181,31 @@
          (:password_hash user5-map)))
   )
 
-(def test-media1 )
+
+
+(deftest test-media
+  (testing "add-media-types"
+    (let [test-media-id1 (add-media-type {:media_type_name "user avatar"
+                                          :is_active        true})
+          test-media1 (first (get-media-type-by-id test-media-id1))
+          test-media-id2 (add-media-type {:media_type_name "game avatar"
+                                          :is_active        true})
+          test-media2 (first (get-media-type-by-id test-media-id2))
+          test-media-id3 (add-media-type {:media_type_name "room avatar"
+                                          :is_active        true})
+          test-media3 (first (get-media-type-by-id test-media-id3))
+          test-media-id4 (add-media-type {:media_type_name "trash picture"
+                                          :is_active        false})
+          test-media4 (first (get-media-type-by-id test-media-id4))
+          all-active-media-types (conj [] test-media1 test-media2 test-media3)
+          all-media-types (conj test-media4 all-active-media-types )
+          media-types_small (into [] (take-last 3 (get-media-types)))
+          media-types_full (into [] (take-last 4 (get-media-types)))
+          avatar (first (get-media-type-by-id test-media-id3))]
+      (println avatar)
+      (is (= (:Media_Type_Name avatar) "room avatar"))
+      (is (= all-active-media-types media-types_small))
+      (is (= all-media-types media-types_full))
+      (is (= avatar test-media3))
+      ))
+  )

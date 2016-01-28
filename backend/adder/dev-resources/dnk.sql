@@ -151,7 +151,7 @@ CREATE TABLE Media_Type
 (
 	`id_Media_Type` 	INT 			NOT NULL AUTO_INCREMENT
 	,`Media_Type_Name`	VARCHAR(250) 	NOT NULL
-    ,`is_actve` 		BIT 			NOT NULL
+    ,`is_active` 		BIT 			NOT NULL
 	,PRIMARY KEY (id_Media_Type)
 )
 ENGINE=INNODB;

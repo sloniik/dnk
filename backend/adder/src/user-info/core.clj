@@ -2,15 +2,7 @@
   (:use database.core :as db)
   (:use utilities.core :as util))
 
-(def passw-hash-tmp 123)
 
-(def a
-  clojure.uuid)
-
-(defn passw-hash
-  "gets password as string returns its hash"
-  [_password]
-  passw-hash-tmp)
 
 (defn login-user
   "function gets login, password and check if user is eligible"
@@ -34,9 +26,9 @@
 (defn create-user!
   "creates user in database_test"
   [params]
-  (if (user-exist? (:login params)
+  (if (user-exist? {:login params})
     {:status 101
      :header ""
      :body "User is already in the list"}
-    )))
+    ))
   ;;(create new id))
