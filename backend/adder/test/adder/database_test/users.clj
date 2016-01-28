@@ -98,13 +98,6 @@
         ]
 
     (testing "get-all-users"
-      (is (= id-user1 1))
-      (is (= id-user2 2))
-      (is (= id-user3 3))
-      (is (= id-user4 4))
-      (is (= id-user4 4))
-      (is (= id-user5 5))
-
       (is (empty? (rest user1-list)))
       (is (empty? (rest user2-list)))
       (is (empty? (rest user3-list)))

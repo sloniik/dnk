@@ -52,15 +52,6 @@
   (let [user-info (get-user-info-by-id id)]
     (:password_hash (first user-info))))
 
-;;;Получаем значения полей пользователя (кроме password и salt)
-;(defn get-user-safe-info
-;  "Get user by type key (id or login)"
-;  [id]
-;  (let [user-info (get-user-info-by-id id)]
-;    (-> user-info
-;        (dissoc :salt)
-;        (dissoc :password-hash))))
-
 (defn get-media-types
   "Get active types of media available"
   []
@@ -83,18 +74,6 @@
   [map]
   (:generated_key (k/insert :media_type
             (k/values map))))
-
-(defn update-media-type-name
-  [type-id new-name]
-  (k/update :media_type
-            (k/set-fields {:media_type_name new-name})
-            (k/where {:id_media_type type-id})))
-
-(defn delete-media-type
-  [type-id]
-  (k/update :media_type
-            (k/set-fields {:is_active false})
-            (k/where {:id_media_type type-id})))
 
 ;;TODO: функция должна возращать файл, а не путь к файлу? Может так и назвать функцию или доописать
 (defn get-user-media
