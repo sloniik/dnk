@@ -25,7 +25,7 @@
   "Get user by user-id"
   [user-id]
   (k/select :users
-          (k/where {:id_user user-id})))
+            (k/where {:id_user user-id})))
 
 ;;Получем пользователя по логину
 (defn get-user-info-by-login
@@ -79,7 +79,7 @@
 (defn add-media-type
   "Adds new media type"
   [map]
-  (k/insert :media_type map))
+  (:generated_key (k/insert :media_type map)))
 
 (defn update-media-type-name
   [type-id new-name]
