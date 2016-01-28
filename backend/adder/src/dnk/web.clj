@@ -19,8 +19,8 @@
            (POST "/login" [login, password]
                 (json-response {"resultCode" 0, "resultDesc" password})))
 
-;(defn -main [& args]
-;  (println "Working!"))
+(defn -main [& args]
+  (println "Working!"))
 
 (def app
   (-> handler
