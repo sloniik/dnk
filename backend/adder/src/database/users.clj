@@ -6,18 +6,19 @@
             [korma.core :as k]
             [korma.db :as kdb]))
 
-;TODO: дописать entity
-(k/defentity users
-             (k/pk :id_user)
-             (k/table :users)
-             (k/database core/db)
-             )
+
+;;TODO: дописать entity
+;(k/defentity users
+;             (k/pk :id_user)
+;             (k/table :users)
+;             (k/database core/db)
+;             )
 
 ;; ================ User functions ===================
 (defn get-all-users
   "List of all users"
   []
-  (k/select users))
+  (k/select :users))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
@@ -81,7 +82,7 @@
   "Adds new media type"
   [map]
   (:generated_key (k/insert :media_type
-                            (k/values map))))
+            (k/values map))))
 
 (defn update-media-type-name
   [type-id new-name]
@@ -112,14 +113,15 @@
 
 (defn get-all-user-sessions
   "Gets all sessions, made by user"
-  [db-spec user-id]
+  [user-id]
   (k/select :user_session
             (k/where {:id_user user-id})))
 
 ;TODO: реализовать функцию
 (defn get-current-user-session
   "Gets current session by certain user"
-  [db-spec user-id]
+  [user-id]
+
   )
 
 ;;Проверяем, что данный логин еще не занят
