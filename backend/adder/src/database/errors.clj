@@ -25,3 +25,5 @@
 
 
 ;; ===== ROOM ERRORS =====
+(def kill-room-error {:err-code '3001'
+                             :err-desc "Can't deactivate room"})
