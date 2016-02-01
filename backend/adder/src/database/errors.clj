@@ -14,7 +14,7 @@
 (def incorrect-user-passw   {:err-code '1003'
                              :err-desc "Password doesn't match"})
 
-(def inactive-user-error   {:err-code '1004'
+(def inactive-user-error    {:err-code '1004'
                              :err-desc "User email is not activated"})
 
 ;; ===== GAME ERRORS =====
@@ -25,5 +25,11 @@
 
 
 ;; ===== ROOM ERRORS =====
-(def kill-room-error {:err-code '3001'
+(def kill-room-error        {:err-code '3001'
                              :err-desc "Can't deactivate room"})
+(def update-game-in-room-error
+                            {:err-code '3002'
+                             :err-desc "Can't change game in "})
+(def update-game-master-in-room-error
+  {:err-code '3002'
+   :err-desc "Can't update game master id"})

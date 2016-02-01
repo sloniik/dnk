@@ -136,6 +136,7 @@
                 user1-map))
       )
 
+
     (testing "get-user-salt"
       (is (= (get-user-salt id-user1)
              (:salt user1-map)))

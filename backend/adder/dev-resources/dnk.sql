@@ -204,7 +204,7 @@ ENGINE=INNODB;
 CREATE TABLE game_Log
 (
 	`id_Log_Entry` 			BIGINT 			NOT NULL AUTO_INCREMENT
-	,`id_Log_Entry_Type` 	INT 			NOT NULL 
+	,`id_Log_Entry_Type` 	INT 			NOT NULL
 	,`id_game` 				BIGINT 			NOT NULL 
 	,`Description` 			VARCHAR(2048) 	NOT NULL 
 	,`dt_Created` 			DATETIME 		NOT NULL 
@@ -329,3 +329,6 @@ ALTER TABLE Question ADD FOREIGN KEY (id_room) REFERENCES room_Access(id_room);
 ALTER TABLE Question ADD FOREIGN KEY (id_user) REFERENCES users(id_user);
 -- Create Foreign Key: users.id_user_session -> user_session.id_user_session
 ALTER TABLE Users ADD FOREIGN KEY (id_user_session) REFERENCES user_session(id_user_session);
+
+;;Добавления для прохождения тестов по rooms
+INSERT INTO `dnk_test`.`game_type` (`id_game_type`, `type_name`) VALUES ('1', 'ДаНетКи');

@@ -112,8 +112,9 @@
 ;;korma-mod
 (defn k-insert-data
   [table-name new-record-map]
+  (k/sql-only
   (k/insert table-name
-            (k/values new-record-map)))
+            (k/values new-record-map))))
 ;(k-insert-data :fruit {:name "Забор" :appearance "Острый" :cost 100 :flag true})
 
 (defn update-data
@@ -279,8 +280,9 @@
   Search for similar game first
   Return gameID and operation-status
   game info - map"
-  [db-spec game-info]
-  (let [result (insert-data db-spec :game game-info)]
+  [game-info]
+  (let [result (k-insert-data :game game-info)]
+    (println result)
     (if (nil? (:generated_key result))
       {:error-code    (:err-code err/create-game-error)
        :error-desc    (str (:err-desc err/create-game-error) game-info)}
@@ -321,4 +323,5 @@
 ;
 ;(selc :fruit :name "Ca")
 
-;;TODO: необходимы функции для chat. Например, в create-room на вход мапа, где есть ссылка на чат, если он есть. А кто создаст нам чат? и в какой момент?
+;;TODO: необходимы функции для chat. Например, в create-room на вход мапа, где есть ссылка на чат, если он есть. А кто созда
+;;TODO: нет функций для работы с таблицей game_users ++ я плохо понимаю назначение это таблицы (написал в письме)
