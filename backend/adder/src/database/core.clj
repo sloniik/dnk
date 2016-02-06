@@ -281,8 +281,9 @@
   Return gameID and operation-status
   game info - map"
   [game-info]
-  (let [result (k-insert-data :game game-info)]
-    (println result)
+  (let [result (k/insert :game
+                         (k/values game-info))]
+    ;(println result)
     (if (nil? (:generated_key result))
       {:error-code    (:err-code err/create-game-error)
        :error-desc    (str (:err-desc err/create-game-error) game-info)}
@@ -307,9 +308,9 @@
 (defn get-random-game
   "Return random game"
   [db-spec]
-  (let [games (get-all-public-games db-spec)
-        game-number (count games)
-        n-games (take (rand-int game-number) games)]
+  (let [all-games (get-all-public-games db-spec)
+        games-count (count all-games)
+        n-games (take (rand-int games-count) all-games)]
     (last n-games)))
 
 

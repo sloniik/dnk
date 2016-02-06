@@ -31,5 +31,8 @@
                             {:err-code '3002'
                              :err-desc "Can't change game in "})
 (def update-game-master-in-room-error
-  {:err-code '3002'
-   :err-desc "Can't update game master id"})
+                            {:err-code '3003'
+                             :err-desc "Can't update game master id"})
+(def user-already-in-room-error
+                            {:err-code '3004'
+                             :err-desc "User has already entered the room"})

@@ -49,11 +49,12 @@ ENGINE=INNODB;
 -- Create Table: room_users
 CREATE TABLE room_users
 (
+	`id_room_users` 	BIGINT 			NOT NULL AUTO_INCREMENT
 	`id_room` 			BIGINT 			NOT NULL
 	,`id_user` 			BIGINT 			NOT NULL
 	,`dt_joined` 		DATETIME 		NOT NULL
     ,`dt_left`			DATETIME		NULL
-	,PRIMARY KEY (id_room, id_user)
+	,PRIMARY KEY (id_room_user)
 )
 ENGINE=INNODB;
 -- Create Table: game
