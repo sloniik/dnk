@@ -70,6 +70,7 @@
         (enter-room room2 (get-random-user))
         (kill-room room1)
 
+
         (is (= 1 1)))))
   )
 ;create-game
