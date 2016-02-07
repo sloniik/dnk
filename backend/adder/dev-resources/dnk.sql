@@ -255,7 +255,7 @@ CREATE TABLE Question
 	`id_Question` 			BIGINT 			NOT NULL AUTO_INCREMENT
 	,`id_room` 				BIGINT 			NOT NULL 
 	,`id_user` 				BIGINT 			NOT NULL 
-	,`Message` 				VARCHAR(1024) 	NOT NULL 
+	,`Message_Test			VARCHAR(1024) 	NOT NULL
     ,`Answer`  				VARCHAR(1024) 	NULL
 	,`dt_Created` 			DATETIME 		NOT NULL 
     ,`dt_Answered`			DATETIME		NULL
