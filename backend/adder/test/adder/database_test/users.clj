@@ -1,40 +1,9 @@
+;; ==== backend USERS TESTs ====
+
 (ns adder.database_test.users
   (:use [clojure.test]
         [database.users])
-  (:require [clojure.string :as str]
-            [utilities.core :as u]
-            [database.errors :as err]
-            [korma.db :as k]))
-
-;; ==== backend TESTs ====
-
-;(def root-db-spec {:classname   "com.mysql.jdbc.Driver"
-;                   :subprotocol "mysql"
-;                   :ssl?        false
-;                   :subname     "//127.0.0.1:3306/dnk_test"
-;                   :user        "root"
-;                   :password    "12345"})
-;
-;(def root-conn (db/pool root-db-spec))
-
-;(defn exec-sql-file
-;  [db-spec file]
-;  (let [commands (str/split
-;                   (slurp file) #";")]
-;    (println (take 2 commands))
-;    (jdbc/execute!
-;      db-spec
-;      commands
-;      :multi? true
-;      :transaction? true)))
-
-
-
-;;Пока не работает
-;(exec-sql-file root-db-spec (io/resource "dnk.sql"))
-
-;(def test-conn db/pooled-db)
-
+  (:require [utilities.core :as u]))
 
 (deftest users-test
   (let [

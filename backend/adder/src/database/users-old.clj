@@ -1,4 +1,4 @@
-(ns database.users
+(ns database.users-old
   (:gen-class)
   (:require [database.core :as core]
             [utilities.core :as u]
@@ -32,13 +32,13 @@
   "Get user by login"
   [login]
   (k/select :users
-            (k/where {:user_name login})))
+          (k/where {:user_name login})))
 
 (defn get-user-info-by-mail
   "Get user by user-id"
   [email]
   (k/select :users
-            (k/where {:email email})))
+          (k/where {:email email})))
 
 (defn get-user-salt
   "Get user salt"
@@ -71,9 +71,9 @@
 
 (defn add-media-type
   "Adds new media type"
-  [media-type-map]
+  [map]
   (:generated_key (k/insert :media_type
-                            (k/values media-type-map))))
+            (k/values map))))
 
 ;;TODO: функция должна возращать файл, а не путь к файлу? Может так и назвать функцию или доописать
 (defn get-user-media
@@ -99,7 +99,9 @@
 ;TODO: реализовать функцию
 (defn get-current-user-session
   "Gets current session by certain user"
-  [user-id])
+  [user-id]
+
+  )
 
 ;;Проверяем, что данный логин еще не занят
 (defn login-available?
@@ -114,8 +116,7 @@
 (defn banned-user?
   "check whether user is banned"
   [user-id]
-  (let [user (get-user-info-by-id user-id)]
-    (:is_banned user)))
+  )
 
 (defn email-registered?
   "Check whether email is already registered"
@@ -128,8 +129,8 @@
 ;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
 (defn password-match?
   "Check if hashed password in database_test matches calculated hash"
-  [user-id password-hash]
-  (if (= password-hash (get-user-pass user-id))
+  [id-user password-hash]
+  (if (= password-hash (get-user-pass id-user))
     true
     false))
 
@@ -138,64 +139,48 @@
   "Create new user"
   [user-map]
   (let [return (k/insert :users
-                         (k/values user-map))]
-    (:generated_key return)))
+                      (k/values user-map))]
+    (:generated_key return)
+    ))
 
-;TODO: реализовать функцию отправки email с кодом верификации
 (defn send-email
-  "Send email with code in the email body"
+  "send email with code in the email body"
   [email code]
-  true)
+  code)
 
-(defn add-email-code
-  "Add email-code to users table"
-  [email code]
-  (let [user (get-user-info-by-mail email)
-        user-id (:id_user user)]
-    (k/update :users
-              (k/set-fields {:email-code code})
-              (k/where (= :id_user user-id)))))
-
-(defn register-email
-  "Register email:
-  -- add code to users table
-  -- send email with the code"
-  [email code]
-  (let [email-status? send-email email code]
-    (if (not email-status?)
-      {:error-code (:err-code err/email-sending-error)
-       :error-desc (str (:err-desc err/email-sending-error) " " email)}
-      (add-email-code email code))))
-
+;TODO: переделать функции Update
 (defn activate-user
   "activate user after confirming email with code"
   [email code]
-  (let [user-info (get-user-info-by-mail email)
-        user-id (:id_user user-info)]
-    (k/update :users
-              (k/set-fields {:is_active  true})
-              (k/where (= :id_user user-id)))))
+  ;(let [user-info (get-user-safe-info email)
+  ;      user-id (:id_user user-info)]
+    ;(update-data db-spec
+    ;             {:is_active  true}
+    ;             (u/sel-n-upd-map :users :id_user user-id)))
+  )
 
 ;;Меняет профиль пользователя
 (defn update-user-profile
   "Updates user profile"
-  [user-id profile-map]
-  (k/update :users
-            (k/set-fields profile-map)
-            (k/where (= :id_user user-id))))
+  [db-spec id-user profile-map]
+  ;(update-data db-spec
+  ;             profile-map
+  ;             (u/sel-n-upd-map :users :id_user id-user))
+  )
 
 ;;Обновляем токен пользователя
 (defn update-user-token
   "Updates token in table Users"
-  [user-id token]
-  (k/update :users
-            (k/set-fields {:user_token token})
-            (k/where (= :id_user user-id))))
+  [db-spec id-user token]
+  ;(update-data db-spec
+  ;             {:user_token token}
+  ;             (u/sel-n-upd-map :users :id_user id-user))
+  )
 
 (defn create-user-session
   "Creates new user session"
-  [user-id]
-  (let [user-map {:id_user user-id}]
+  [id-user]
+  (let [user-map {:id_user id-user}]
     (k/insert :user_session
               (k/values user-map)))
   )
@@ -203,18 +188,22 @@
 ;;Деактивирует пользователя. ставит в таблице Users is_active=false
 (defn deactivate-user
   "Deactivates user (updating record in table Users"
-  [user-id]
-  (k/update :users
-            (k/set-fields {:is_active false})
-            (k/where (= :id_user user-id))))
+  [db-spec
+   id-user]
+  ;(update-data db-spec
+  ;             {:is_active false}
+  ;             (u/sel-n-upd-map :users :id_user id-user))
+  )
 
 ;;Банит пользователя, запрещая ему активность на сайте
 (defn ban-user
   "Bans user blocking his activity"
-  [user-id]
-  (k/update :users
-            (k/set-fields {:is_banned false})
-            (k/where (= :id_user user-id))))
+  [db-spec
+   id-user]
+  ;(update-data db-spec
+  ;             {:is_banned true}
+  ;             (u/sel-n-upd-map :users :id_user id-user))
+  )
 
 ;; ==== HighLevel-Functions ====
 ;; сценарий №1: регистрация пользователя
@@ -240,7 +229,7 @@
                       :is_banned     false
                       :is_admin      false
                       :email_code    code})  ; код верификации email
-        (register-email (:email user-info) code))
+        (send-email (:email user-info) code))
       (not login-correct?)
       {:error-code (:err-code err/incorrect-user-login)
        :error-desc (str (:err-desc err/incorrect-user-login) " " (:login user-info) )}

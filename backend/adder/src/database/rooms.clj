@@ -4,6 +4,7 @@
 (ns database.rooms
   (:gen-class)
   (:require [database.core :as core]
+            [database.users :as user]
             [utilities.core :as u]
             [database.errors :as err]
             [korma.core :as k]))
@@ -237,8 +238,12 @@
 (defn enter-room
   "user enters room"
   [room-id user-id]
-  (let [private? (private-room? room-id)]
-    (if private?
-      (grant-user-access room-id user-id)
-      (let [result (add-user->room room-id user-id)]
-        result))))
+  (let [private? (private-room? room-id)
+        user-banned? (user/banned-user? user-id)]
+    (if user-banned?
+      {:error-code (:err-code err/banned-user-error)
+       :error-desc (str (:err-desc err/banned-user-error) " " user-id)}
+      (if private?
+        (grant-user-access room-id user-id)
+        (let [result (add-user->room room-id user-id)]
+          result)))))

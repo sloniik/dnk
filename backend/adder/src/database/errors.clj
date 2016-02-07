@@ -16,6 +16,10 @@
 
 (def inactive-user-error    {:err-code '1004'
                              :err-desc "User email is not activated"})
+(def banned-user-error      {:err-code '1005'
+                             :err-desc "User is banned. User-id:"})
+(def email-sending-error    {:err-code '1006'
+                             :err-desc "We can't send e-mail to the following email-address:"})
 
 ;; ===== GAME ERRORS =====
 (def create-game-error      {:err-code '2001'
