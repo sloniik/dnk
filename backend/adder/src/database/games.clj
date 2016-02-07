@@ -12,7 +12,7 @@
 ;;Получаем список всех игр
 (defn get-all-games
   "Get collection of all games ever created"
-  [db-spec]
+  []
   (k/select :game))
 
 ;;Получаем список игр с параметром isDeleted = false
@@ -44,7 +44,7 @@
 ;;Получаем список игр определенного типа
 (defn get-games-by-variant
   "Get collection of games by variant"
-  [db-spec game-variant-id]
+  [game-variant-id]
   (k/select :game
             (k/where (= :id_game_variant game-variant-id))))
 
@@ -127,7 +127,7 @@
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
   "Get all media for a certain game"
-  [db-spec id-game]
+  [game-id]
   (k/select :game_media
             (k/where
               (= :is_game game-id))))
@@ -135,21 +135,21 @@
 ;;Получаем набор пользователей по данной игре
 (defn get-game-users
   "Get all users for a certain game"
-  [db-spec id-game]
+  [game-id]
   (k/select :game_users
             (k/where
               (= :is_game game-id))))
 
 (defn get-game-by-id
   "Get game data by it's id"
-  [db-spec id-game]
+  [game-id]
   (k/select :game
             (k/where
               (= :is_game game-id))))
 
 (defn get-random-game
   "Return random game"
-  [db-spec]
+  []
   (let [public-games (get-all-public-games)
         game-rand-num (rand-int (count public-games))
         n-games (take game-rand-num public-games)]
