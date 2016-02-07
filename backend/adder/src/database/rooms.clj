@@ -5,6 +5,7 @@
   (:gen-class)
   (:require [database.core :as core]
             [database.users :as user]
+            [database.chat :as chat]
             [utilities.core :as u]
             [database.errors :as err]
             [korma.core :as k]))
@@ -97,7 +98,6 @@
   "count users in room-id"
   [room-id]
   (count (get-users-in-room room-id)))
-
 
 
 
@@ -205,8 +205,6 @@
 ;;TODO: (Future) необходимо написать функцию запроса доступа в приватную комнату
 
 
-
-
 ;;Создает новую комнату
 (defn create-room!
   "Creates room for a certain game
@@ -222,9 +220,12 @@
   [room-map]
   ;;TODO: создать чат
   ;(let [room-map (assoc room-map :id_chat (create-chat))]
-  (let [new-room (k/insert :room
-                           (k/values room-map))]
-    (:generated_key new-room)))
+  (let [new-room  (k/insert :room
+                            (k/values room-map))
+        room-id   (:generated_key new-room)]
+    (if (:has_chat room-map)
+      (chat/create-chat room-id))
+    room-id))
 
 (defn kill-room
   "correctly kill room:
