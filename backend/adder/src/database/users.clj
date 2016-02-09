@@ -1,11 +1,9 @@
 (ns database.users
   (:gen-class)
   (:require [database.core :as core]
-            [utilities.core :as u]
             [database.errors :as err]
-            [korma.core :as k]
-            [korma.db :as kdb]))
-
+            [utilities.core :as u]
+            [korma.core :as k]))
 
 ;;TODO: дописать entity
 ;(k/defentity users
@@ -39,18 +37,6 @@
   [email]
   (k/select :users
             (k/where {:email email})))
-
-(defn get-user-salt
-  "Get user salt"
-  [id]
-  (let [user-info (get-user-info-by-id id)]
-    (:salt (first user-info))))
-
-(defn get-user-pass
-  "get user password hash"
-  [id]
-  (let [user-info (get-user-info-by-id id)]
-    (:password_hash (first user-info))))
 
 (defn get-media-types
   "Get active types of media available"
@@ -101,38 +87,6 @@
   "Gets current session by certain user"
   [user-id])
 
-;;Проверяем, что данный логин еще не занят
-(defn login-available?
-  "Check whether login available"
-  [login]
-  (let [user-info (get-user-info-by-login login)]
-    (if (nil? user-info)
-      true
-      false)))
-
-;;Проверяем, что пользовтель не забанен. Use-case - вход в комнату
-(defn banned-user?
-  "check whether user is banned"
-  [user-id]
-  (let [user (get-user-info-by-id user-id)]
-    (:is_banned user)))
-
-(defn email-registered?
-  "Check whether email is already registered"
-  [email]
-  (let [user-info (get-user-info-by-mail email)]
-    (if (nil? user-info)
-      true
-      false)))
-
-;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
-(defn password-match?
-  "Check if hashed password in database_test matches calculated hash"
-  [user-id password-hash]
-  (if (= password-hash (get-user-pass user-id))
-    true
-    false))
-
 ;;Создает нового пользователя
 (defn create-user
   "Create new user"
@@ -161,7 +115,7 @@
   -- add code to users table
   -- send email with the code"
   [email code]
-  (let [email-status? send-email email code]
+  (let [email-status? (send-email email code)]
     (if (not email-status?)
       {:error-code (:err-code err/email-sending-error)
        :error-desc (str (:err-desc err/email-sending-error) " " email)}
@@ -197,8 +151,7 @@
   [user-id]
   (let [user-map {:id_user user-id}]
     (k/insert :user_session
-              (k/values user-map)))
-  )
+              (k/values user-map))))
 
 ;;Деактивирует пользователя. ставит в таблице Users is_active=false
 (defn deactivate-user
@@ -215,59 +168,3 @@
   (k/update :users
             (k/set-fields {:is_banned false})
             (k/where (= :id_user user-id))))
-
-;; ==== HighLevel-Functions ====
-;; сценарий №1: регистрация пользователя
-;; проверить, что логин и email дейсвительные. если все ок, зарегистрировать пользователя
-(defn register-user!
-  "register user with login and/or email
-  (= pasword password-repeat) was checked on the client side
-  (salt) was generated on the client side
-  (password-hash) was generated on the client side"
-  [user-info]
-  (let [login-correct? (login-available? (:login user-info))
-        email-correct? (email-registered? (:email user-info))
-        code u/get-uuid]
-    (cond
-      (and login-correct? email-correct?)
-      (do
-        (create-user {:user_name     (:login user-info)
-                      :email         (:email user-info)
-                      :password_hash (:password-hash user-info)
-                      :salt          (:salt user-info)
-                      :dt_created    (u/now)
-                      :is_active     false   ;при создании человек не активен, так как надо подтвердить email
-                      :is_banned     false
-                      :is_admin      false
-                      :email_code    code})  ; код верификации email
-        (register-email (:email user-info) code))
-      (not login-correct?)
-      {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " " (:login user-info) )}
-      (not email-correct?)
-      {:error-code (:err-code err/incorrect-user-email)
-       :error-desc (str (:err-desc err/incorrect-user-email) " " (:email user-info) )})))
-
-;; сценарий №2: вход пользователя по логину и паролю
-;; проверить, что логин и пароль дейсвительные. если все ок, отдать token пользователю
-(defn login-user
-  "login user with login-info - {:login :password-hash}"
-  [db-spec login-info]
-  (let [login-correct? (login-available? (:login login-info))
-        user-info (get-user-info-by-login (:login login-info))
-        user-id (:id_user user-info)
-        password-correct? (password-match? user-id (:password-hash login-info))
-        user-active? (:is_active user-info)]
-    (cond
-      (and login-correct? password-correct? user-active?)
-      (create-user-session user-id); вернуть пользователю сессию
-      (not login-correct?)
-      {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " "
-                        (:login login-info) )}
-      (not password-correct?)
-      {:error-code (:err-code err/incorrect-user-passw)
-       :error-desc (:err-desc err/incorrect-user-passw)}
-      (not user-active?)
-      {:error-code (:err-code err/inactive-user-error)
-       :error-desc (:err-desc err/inactive-user-error)})))

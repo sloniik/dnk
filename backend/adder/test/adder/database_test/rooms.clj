@@ -3,7 +3,8 @@
         [database.rooms]
         [database.users]
         [database.games]
-        [database.core])
+        [database.core]
+        [component.room])
   (:require [clojure.string :as str]
             [utilities.core :as u]
             [database.errors :as err]
@@ -17,16 +18,6 @@
 ;
 ;(def g-v (:generated_key (k/insert :game_variant
 ;                                   (k/values {:id_game_type g-t}))))
-
-(defn get-random-user
-  "Return random game"
-  []
-  (let [all-users (get-all-users)
-        users-count (count all-users)
-        random-n (rand-int users-count)
-        random-user-list (take (max 1, random-n) all-users)]
-    (:id_user (last random-user-list))))
-
 
 ;;TODO: devArt - создать тесты комнат
 (deftest users-test
@@ -74,37 +65,37 @@
                              :dt_start         (u/now)
                              :dt_end           (u/now)
                              :is_active        false})
-        user-ent-1  (enter-room room1 user1)
-        user-ent-1  (enter-room room1 user2)
-        user-ent-2  (enter-room room2 user2)]
+        user-ent-1  (enter room1 user1)
+        user-ent-1  (enter room1 user2)
+        user-ent-2  (enter room2 user2)]
 
     (testing "create-room"
       (println "room1: " room1 " room2: " room2)
       (is (= 1 1)))
 
     (testing "enter-room"
-      (let [users-in-room (get-users-in-room room1)]
+      (let [users-in-room (get-users room1)]
         (println "users-in-room" users-in-room)
         (println "users-in-room" [user1 user2])
-        (is (= (count-users-in-room room1) 2))
-        (is (= (count-users-in-room room2) 1))
+        (is (= (count-users room1) 2))
+        (is (= (count-users room2) 1))
         (is (= true (user-in-room? room1 user1)))
         (is (= true (user-in-room? room1 user2)))
         (is (= true (user-in-room? room2 user2)))
         (is (= users-in-room [user1 user2]))))
 
     (testing "get-room-list"
-      (let [n-room-game1 (count-rooms-with-game game1)
-            n-room-game2 (count-rooms-with-game game2)]
+      (let [n-room-game1 (count-rooms game1)
+            n-room-game2 (count-rooms game2)]
         (is (= n-room-game1 1))
-        (is (= n-room-game1 1))))
+        (is (= n-room-game2 1))))
 
     (testing "leave-room"
       (let [left-user (kick-user room2 user2)]
         (println "left-user: " left-user)))
 
     (testing "kill-room"
-      (let [killed-room (kill-room room1)]
+      (let [killed-room (kill room1)]
         (println killed-room)
         (is (= killed-room 1)))))
   )

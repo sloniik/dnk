@@ -5,8 +5,8 @@
   (:gen-class)
   (:require [database.core :as core]
             [database.users :as user]
-            [utilities.core :as u]
             [database.errors :as err]
+            [utilities.core :as u]
             [korma.core :as k]))
 
 ;;Получаем список всех игр
@@ -147,13 +147,11 @@
             (k/where
               (= :is_game game-id))))
 
-(defn get-random-game
-  "Return random game"
-  []
-  (let [public-games (get-all-public-games)
-        game-rand-num (rand-int (count public-games))
-        n-games (take game-rand-num public-games)]
-    (last n-games)))
+;;NOT IN TO-DO LIST
+(defn approve-game
+  "Approve game by game-id"
+  [game-id])
+
 
 ;;TODO сделать функцию проверки игры на похожесть
 (defn create-game
@@ -170,10 +168,6 @@
        :error-desc    (str (:err-desc err/create-game-error) game-info)}
       (:generated_key result))))
 
-;;NOT IN TO-DO LIST
-(defn approve-game
-  "Approve game by game-id"
-  [game-id])
 
 (defn change-game-info-by-id
   "Create new record in GAME table.
@@ -181,8 +175,8 @@
   Return gameID and operation-status"
   [game-id game-info]
   (let [result (k/update :game
-                          (k/set-fields game-info)
-                          (k/where (= :id_game game-id)))]
+                         (k/set-fields game-info)
+                         (k/where (= :id_game game-id)))]
     (if (nil? (first result))
       {:error-code (:err-code err/change-game-info-error)
        :error-desc (str (:err-desc err/change-game-info-error) game-id " game-info " game-info)}
