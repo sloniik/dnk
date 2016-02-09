@@ -206,7 +206,7 @@
 
 
 ;;Создает новую комнату
-(defn create-room!
+(defn create-room
   "Creates room for a certain game
   room-map structure: {:id_user_master
                        :title
