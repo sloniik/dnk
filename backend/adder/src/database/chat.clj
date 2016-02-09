@@ -11,8 +11,7 @@
 (defn create-chat
   [room-id]
   (let [chat-map {:id_room room-id
-                  :dt_created (u/now)
-                  }
+                  :dt_created (u/now)}
         new-chat (k/insert :chat
                          (k/values chat-map))]
     (:generated_key new-chat)))
@@ -24,7 +23,8 @@
   (let [room-map {:id_user      user-id
                   :id_chat      chat-id
                   :message_text text
-                  :dt_sent      (u/now)}]
+                  :dt_sent      (u/now)
+                  :is_deleted   false}]
     (k/insert :chat_Message
               (k/values room-map))))
 
@@ -49,7 +49,7 @@
             (k/where
               (and
                 (= :id_chat chat-id)
-                (= :is_deleted nil)
+                (= :is_deleted false)
                 (> :dt_sent last-update)))
             (k/order :dt_sent :desc)))
 
@@ -57,13 +57,13 @@
 (defn add-question
   "Adds question to a certain room from a certain user"
   [room-id user-id question]
-  (let [room-map {:id_room      room-id
-                  :id_user      user-id
-                  :message_text question
-                  :dt_created   (u/now)
-                  :is_deleted   false}]
+  (let [quest-map {:id_room      room-id
+                   :id_user      user-id
+                   :message_text question
+                   :dt_created   (u/now)
+                   :is_deleted   false}]
     (k/insert :question
-              (k/values room-map))))
+              (k/values quest-map))))
 
 ;;Удаляет вопрос
 (defn delete-question

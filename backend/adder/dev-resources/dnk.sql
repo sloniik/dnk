@@ -333,3 +333,7 @@ ALTER TABLE Users ADD FOREIGN KEY (id_user_session) REFERENCES user_session(id_u
 
 ;;Добавления для прохождения тестов по rooms
 INSERT INTO `dnk_test`.`game_type` (`id_game_type`, `type_name`) VALUES ('1', 'ДаНетКи');
+
+;;унификация полей для вопросов и сообщений в чате
+ALTER TABLE `dnk_test`.`Question`
+CHANGE COLUMN `Message` `message_text` VARCHAR(1024) NOT NULL ;

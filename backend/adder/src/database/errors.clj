@@ -40,3 +40,7 @@
 (def user-already-in-room-error
                             {:err-code '3004'
                              :err-desc "User has already entered the room"})
+
+;; ===== CHAT ERRORS =====
+(def room-has-no-chat        {:err-code '4001'
+                             :err-desc "Room doesn't have any chat, room-id: "})
