@@ -6,11 +6,9 @@
   (:require [database.core :as core]
             [database.users :as user]
             [database.chat :as chat]
-            [utilities.core :as u]
             [database.errors :as err]
+            [utilities.core :as u]
             [korma.core :as k]))
-
-;; =============Вспомогательные функции===============
 
 ;; выяснить приватная ли комната
 (defn private-room?
@@ -55,13 +53,6 @@
             (k/where {:id_room room-id
                       :dt_left nil})))
 
-;; Расчет количества комнат, в которых играется игра
-(defn count-rooms-with-game
-  "count rooms with game-id"
-  [game-id]
-  (let [rooms (get-rooms-with-game-list game-id)]
-    (count rooms)))
-
 ;;Получает текущий список пользователей в конкретной комнате
 (defn user-in-room?
   "Gets list of users ID in certain room"
@@ -86,30 +77,7 @@
        :error-desc (str (:err-desc err/kill-room-error) " " room-id
                         " return of operation is " deactivated-room-number)})))
 
-;;Преобразовать список map' в вектор из use-id
-(defn get-users-in-room
-  "get vector of user IDs"
-  [room-id]
-  (let [user-list (get-user-list-in-room room-id)]
-    (u/vec-map->vec-by-key user-list :id_user)))
-
-;; Расчет количества пользователей в комнате
-(defn count-users-in-room
-  "count users in room-id"
-  [room-id]
-  (count (get-users-in-room room-id)))
-
-
-
 ;; =============Основные функции===============
-
-;;Вернуть список room-id, в которых сейчас играется game-id
-(defn get-rooms-with-game
-  "get room-id vector with game game-id"
-  [game-id]
-  (let [rooms (get-rooms-with-game-list game-id)
-        r-vec (u/vec-map->vec-by-key rooms :id_room)]
-    r-vec))
 
 ;;Получает чат комнаты
 (defn get-chat-id
@@ -204,7 +172,6 @@
                         " in room-id " room-id)})))
 ;;TODO: (Future) необходимо написать функцию запроса доступа в приватную комнату
 
-
 ;;Создает новую комнату
 (defn create-room
   "Creates room for a certain game
@@ -227,24 +194,3 @@
       (chat/create-chat room-id))
     room-id))
 
-(defn kill-room
-  "correctly kill room:
-  -kick all users and then
-  -deactivate room"
-  [room-id]
-  (let [all-user-vec (get-users-in-room room-id)]
-    (dorun (map #(kick-user room-id %) all-user-vec)))
-  (deactivate-room room-id))
-
-(defn enter-room
-  "user enters room"
-  [room-id user-id]
-  (let [private? (private-room? room-id)
-        user-banned? (user/banned-user? user-id)]
-    (if user-banned?
-      {:error-code (:err-code err/banned-user-error)
-       :error-desc (str (:err-desc err/banned-user-error) " " user-id)}
-      (if private?
-        (grant-user-access room-id user-id)
-        (let [result (add-user->room room-id user-id)]
-          result)))))

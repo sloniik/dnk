@@ -1,135 +1,106 @@
 (ns component.user
   (:gen-class)
-  (:use user-constuser-info.user-const :as us-in)
-  (:use user-info.user-const :as uc)
-  (:use database.core :as db)
-  (:import (java.util Date)))
+  (:require [database.core :as core]
+            [database.users :as user-db]
+            [database.errors :as err]
+            [utilities.core :as u]))
 
-;; Util functions
-(defn create-new-user
-  [nickname email]
-  (let [user-init-profile {:name              nickname
-                          :email             email
-                          :active?           false
-                          :ban?              false
-                          :seen-last-time    0
-                          :registration-date Date}]
-  user-init-profile))
+(defn get-salt
+  "Get user salt"
+  [id]
+  (let [user-info (user-db/get-user-info-by-id id)]
+    (:salt (first user-info))))
 
-(defn user-exist?
-  "checks if user already exist in database_test"
+(defn get-pass
+  "get user password hash"
+  [id]
+  (let [user-info (user-db/get-user-info-by-id id)]
+    (:password_hash (first user-info))))
+
+;;Проверяем, что данный логин еще не занят
+(defn login-valid?
+  "Check whether login available"
   [login]
-  (let [u-l (get-list-of-user-logins (db/get-user-list))]
-    (util/elem-in-col? login u-l)))
+  (let [user-info (user-db/get-user-info-by-login login)]
+    (if (nil? user-info)
+      true
+      false)))
 
-(defn get-list-of-user-logins
-  "forms list of users' logins"
-  [u-l]
-  (map #(get % login-key-word ) u-l))
+(defn email-valid?
+  "Check whether email is already registered"
+  [email]
+  (let [user-info (user-db/get-user-info-by-mail email)]
+    (if (nil? user-info)
+      true
+      false)))
 
+;;Проверяем, что пользовтель не забанен. Use-case - вход в комнату
+(defn banned?
+  "check whether user is banned"
+  [user-id]
+  (let [user (user-db/get-user-info-by-id user-id)]
+    (:is_banned user)))
 
-;; Functions implementation:
-(defn -create-user
-  [user-db nickname email]
-  (let [user-init-profile (create-new-user nickname email)]
-    (db/update user-db user-init-profile)
-    (println "here I create user " nickname)))
+;;Передаем вычисленных хеш пароля + соли и проверяем, совпадает ли он с хешем в базе
+(defn password-match?
+  "Check if hashed password in database_test matches calculated hash"
+  [user-id password-hash]
+  (if (= password-hash (get-pass user-id))
+    true
+    false))
 
-(defn -change-profile-basic-info
-  [user-db user-profile-data]
-  (println "here I change profile basic info" user-profile-data))
+;; ==== HighLevel-Functions ====
+;; сценарий №1: регистрация пользователя
+;; проверить, что логин и email дейсвительные. если все ок, зарегистрировать пользователя
+(defn register
+  "register user with login and/or email
+  (= pasword password-repeat) was checked on the client side
+  (salt) was generated on the client side
+  (password-hash) was generated on the client side"
+  [user-info]
+  (let [login-correct? (login-valid? (:login user-info))
+        email-correct? (email-valid? (:email user-info))
+        code u/get-uuid]
+    (cond
+      (and login-correct? email-correct?)
+      (do
+        (user-db/create-user {:user_name     (:login user-info)
+                      :email         (:email user-info)
+                      :password_hash (:password-hash user-info)
+                      :salt          (:salt user-info)
+                      :dt_created    (u/now)
+                      :is_active     false   ;при создании человек не активен, так как надо подтвердить email
+                      :is_banned     false
+                      :is_admin      false
+                      :email_code    code})  ; код верификации email
+        (user-db/register-email (:email user-info) code))
+      (not login-correct?)
+      {:error-code (:err-code err/incorrect-user-login)
+       :error-desc (str (:err-desc err/incorrect-user-login) " " (:login user-info) )}
+      (not email-correct?)
+      {:error-code (:err-code err/incorrect-user-email)
+       :error-desc (str (:err-desc err/incorrect-user-email) " " (:email user-info) )})))
 
-(defn -change-profile-password
-  [user-db user-password]
-  (println "here I change passeo" user-password))
-
-(defn -add-profile-photo
-  [user-db user-photo])
-
-(defn -get-user-list
-  [user-db])
-
-(defn -deactivate-user
-  [user-db user-email])
-
-(defn -ban-user
-  [user-db user-email])
-
-(defn -login-user
-  [user-db user-credentials])
-
-;; protocol description
-(defprotocol UserManagerProtocol
-  (create-user [this nickname email]
-    "create user in database_test.
-    return map  {:status :details}.")
-
-  (change-profile-basic-info [this user-profile-data]
-    "change user profile data.
-    get map     {:nick-name :user-email}
-    return map  {:status :details}.")
-
-  (change-profile-password [this user-password]
-    "change user profile data.
-    get map     {:old-password :new-password :new-password-repeat}
-    return map  {:status :details}.")
-
-  (add-profile-photo [this user-photo]
-    "change user profile photo.
-    get file with user-photochange user profile data.
-    get map     {:nick-name :user-email}
-    return map  {:status :details}.")
-
-  (get-user-list [this]
-  "get user list from database_test
-  get conn
-  return coll of map {:status
-                      :details {:nick-name :active? :ban? :seen-last-time :registration-date}}")
-
-  (deactivate-user [this user-email]
-    "deactivate user in user-list
-    get user-email
-    return map  {:status :details}.
-    --if user is deactivated they can't login")
-
-  (ban-user [this user-email]
-    "ban user
-    get user-email
-    return map  {:status :details}.
-    --if user is banned they can't write questions")
-
-  (login-user [this user-credentials]
-    "login user
-    get map {:user-email :user-password}
-    return map  {:status :details}."))
-
-;; protocol implementation
-(defrecord UserManager [user-db]
-  UserManagerProtocol
-  (create-user [this nickname email]
-    (-create-user user-db nickname email))
-
-  (change-profile-basic-info [this user-profile-data]
-    (-change-profile-basic-info user-db user-profile-data))
-
-  (change-profile-password [this user-password]
-    (-change-profile-password user-db user-password))
-
-  (add-profile-photo [this user-photo]
-    (-add-profile-photo user-db user-photo))
-
-  (get-user-list [this]
-    (-get-user-list user-db))
-
-  (deactivate-user [this user-email]()
-    (-deactivate-user user-db user-email))
-
-  (ban-user [this user-email]
-    (-ban-user user-db user-email))
-
-  (login-user [this user-credentials]
-    (-login-user user-db user-credentials)))
-
-(def um (->UserManager user-db))
-
-;(create-user um "vasya" "abcd@vasya.com")
+;; сценарий №2: вход пользователя по логину и паролю
+;; проверить, что логин и пароль дейсвительные. если все ок, отдать token пользователю
+(defn login
+  "login user with login-info - {:login :password-hash}"
+  [db-spec login-info]
+  (let [login-correct? (login-valid? (:login login-info))
+        user-info (user-db/get-user-info-by-login (:login login-info))
+        user-id (:id_user user-info)
+        password-correct? (password-match? user-id (:password-hash login-info))
+        user-active? (:is_active user-info)]
+    (cond
+      (and login-correct? password-correct? user-active?)
+      (user-db/create-user-session user-id); вернуть пользователю сессию
+      (not login-correct?)
+      {:error-code (:err-code err/incorrect-user-login)
+       :error-desc (str (:err-desc err/incorrect-user-login) " "
+                        (:login login-info) )}
+      (not password-correct?)
+      {:error-code (:err-code err/incorrect-user-passw)
+       :error-desc (:err-desc err/incorrect-user-passw)}
+      (not user-active?)
+      {:error-code (:err-code err/inactive-user-error)
+       :error-desc (:err-desc err/inactive-user-error)})))

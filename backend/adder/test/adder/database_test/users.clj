@@ -2,6 +2,7 @@
 
 (ns adder.database_test.users
   (:use [clojure.test]
+        [component.user]
         [database.users])
   (:require [utilities.core :as u]))
 
@@ -107,28 +108,28 @@
 
 
     (testing "get-user-salt"
-      (is (= (get-user-salt id-user1)
+      (is (= (get-salt id-user1)
              (:salt user1-map)))
-      (is (= (get-user-salt id-user2)
+      (is (= (get-salt id-user2)
              (:salt user2-map)))
-      (is (= (get-user-salt id-user3)
+      (is (= (get-salt id-user3)
              (:salt user3-map)))
-      (is (= (get-user-salt id-user4)
+      (is (= (get-salt id-user4)
              (:salt user4-map)))
-      (is (= (get-user-salt id-user5)
+      (is (= (get-salt id-user5)
              (:salt user5-map)))
       )
 
-    (testing "get-user-pass"
-      (is (= (get-user-pass id-user1)
+    (testing "get-pass"
+      (is (= (get-pass id-user1)
              (:password_hash user1-map)))
-      (is (= (get-user-pass id-user2)
+      (is (= (get-pass id-user2)
              (:password_hash user2-map)))
-      (is (= (get-user-pass id-user3)
+      (is (= (get-pass id-user3)
              (:password_hash user3-map)))
-      (is (= (get-user-pass id-user4)
+      (is (= (get-pass id-user4)
              (:password_hash user4-map)))
-      (is (= (get-user-pass id-user5)
+      (is (= (get-pass id-user5)
              (:password_hash user5-map)))
       )
     )
