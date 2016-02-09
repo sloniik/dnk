@@ -71,9 +71,26 @@
 
 (defn add-media-type
   "Adds new media type"
+  ;;Media type map: {:media-type-name (varchar)
+  ;;                 :is_active       (bit)}
   [media-type-map]
   (:generated_key (k/insert :media_type
-                            (k/values media-type-map))))
+            (k/values media-type-map))))
+
+(defn add-user-media
+  "Adds user media"
+  ;media map: {:id_user
+  ;            :id_media_type
+  ;            :file_path
+  ;            :name}
+  [media-map]
+  (:generated_key (k/insert :user_media
+                            (k/values media-map))))
+
+(defn change-user-media-path
+
+(defn update-user-media
+  "Changes media path name")
 
 ;;TODO: функция должна возращать файл, а не путь к файлу? Может так и назвать функцию или доописать
 (defn get-user-media
