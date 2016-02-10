@@ -44,18 +44,7 @@ create table room_mode
 (
 	`id_room_mode` 	    int 			not null auto_increment
 	,`mode_name`        varchar(250)    not null
-	,primary key (id_game_mode)
-)
-engine=innodb;
--- create table: room_users
-create table room_users
-(
-	`id_room_users` 	bigint 			not null auto_increment
-	`id_room` 			bigint 			not null
-	,`id_user` 			bigint 			not null
-	,`dt_joined` 		datetime 		not null
-    ,`dt_left`			datetime		null
-	,primary key (id_room_user)
+	,primary key (id_room_mode)
 )
 engine=innodb;
 
@@ -99,8 +88,10 @@ engine=innodb;
 create table game_users
 (
 	`id_game` 			bigint 			not null
+	,`id_room`          bigint          not null
 	,`id_user` 			bigint 			not null
 	,`dt_joined` 		datetime 		not null
+	,`dt_left`          datetime        not null
 	,primary key (id_game, id_user)
 )
 engine=innodb;
@@ -173,8 +164,8 @@ engine=innodb;
 -- ------------------------------------------------------------------------------
 create table log_entry_type
 (
-	`id_log_entry_type` int 			not null 
-	,`type_name` 		varchar(250) 	not null 
+	`id_log_entry_type` int 			not null
+	,`type_name` 		varchar(250) 	not null
     ,primary key (id_log_entry_type)
 )
 engine=innodb;
@@ -183,10 +174,10 @@ engine=innodb;
 create table user_log
 (
 	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null 
-	,`id_user` 				bigint 			not null 
-	,`description` 			varchar(2048) 	not null 
-	,`dt_created` 			datetime 		not null 
+	,`id_log_entry_type` 	int 			not null
+	,`id_user` 				bigint 			not null
+	,`description` 			varchar(2048) 	not null
+	,`dt_created` 			datetime 		not null
 	,primary key (id_log_entry)
 )
 engine=innodb;
@@ -195,10 +186,10 @@ engine=innodb;
 create table room_log
 (
 	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null 
-	,`id_room` 				bigint 			not null 
-	,`description` 			varchar(2048) 	not null 
-	,`dt_created` 			datetime 		not null 
+	,`id_log_entry_type` 	int 			not null
+	,`id_room` 				bigint 			not null
+	,`description` 			varchar(2048) 	not null
+	,`dt_created` 			datetime 		not null
 	,primary key (id_log_entry)
 )
 engine=innodb;
@@ -208,9 +199,9 @@ create table game_log
 (
 	`id_log_entry` 			bigint 			not null auto_increment
 	,`id_log_entry_type` 	int 			not null
-	,`id_game` 				bigint 			not null 
-	,`description` 			varchar(2048) 	not null 
-	,`dt_created` 			datetime 		not null 
+	,`id_game` 				bigint 			not null
+	,`description` 			varchar(2048) 	not null
+	,`dt_created` 			datetime 		not null
     ,primary key (id_log_entry)
 )
 engine=innodb;
@@ -219,10 +210,10 @@ engine=innodb;
 create table chat_log
 (
 	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null 
-	,`id_chat` 				bigint 			not null 
-	,`description` 			varchar(2048)	not null 
-	,`dt_created` 			datetime 		not null 
+	,`id_log_entry_type` 	int 			not null
+	,`id_chat` 				bigint 			not null
+	,`description` 			varchar(2048)	not null
+	,`dt_created` 			datetime 		not null
 	,primary key (id_log_entry)
 )
 engine=innodb;
@@ -231,9 +222,9 @@ engine=innodb;
 create table chat
 (
 	`id_chat` 				bigint 			not null auto_increment
-	,`id_room` 				bigint 			not null 
+	,`id_room` 				bigint 			not null
     ,`dt_created`			datetime		not null
-    ,`dt_closed`			datetime 		null	
+    ,`dt_closed`			datetime 		null
 	,primary key (id_chat)
 )
 engine=innodb;
@@ -242,11 +233,11 @@ engine=innodb;
 create table chat_message
 (
 	`id_message` 			bigint 			not null auto_increment
-	,`id_chat` 				bigint 			not null 
-	,`id_user` 				bigint  		null 
-	,`message_text` 		varchar(1024) 	null 
-	,`dt_sent` 				datetime 		not null 
-	,`is_deleted` 			bit 			not null 
+	,`id_chat` 				bigint 			not null
+	,`id_user` 				bigint  		null
+	,`message_text` 		varchar(1024) 	null
+	,`dt_sent` 				datetime 		not null
+	,`is_deleted` 			bit 			not null
 	,primary key (id_message)
 )
 engine=innodb;
@@ -255,9 +246,9 @@ engine=innodb;
 create table question
 (
 	`id_question` 			bigint 			not null auto_increment
-	,`id_room` 				bigint 			not null 
-	,`id_user` 				bigint 			not null 
-	,`message_test			varchar(1024) 	not null
+	,`id_room` 				bigint 			not null
+	,`id_user` 				bigint 			not null
+	,`message_text`			varchar(1024) 	not null
     ,`answer`  				varchar(1024) 	null
 	,`dt_created` 			datetime 		not null 
     ,`dt_answered`			datetime		null
@@ -300,14 +291,12 @@ alter table game_log add foreign key (id_log_entry_type) references log_entry_ty
 alter table game_log add foreign key (id_game) references game_access(id_game);
 -- create foreign key: game_access.id_user -> users.id_user
 alter table game_access add foreign key (id_user) references users(id_user);
--- create foreign key: room_users.id_room -> room.id_room
-alter table room_users add foreign key (id_room) references room(id_room);
--- create foreign key: room_users.id_user -> users.id_user
-alter table room_users add foreign key (id_user) references users(id_user);
 -- create foreign key: game_users.id_game -> game_access.id_game
 alter table game_users add foreign key (id_game) references game_access(id_game);
 -- create foreign key: game_users.id_user -> users.id_user
 alter table game_users add foreign key (id_user) references users(id_user);
+-- create foreign key: game_users.id_room -> room.id_room
+alter table game_users add foreign key (id_room) references room(id_room);
 -- create foreign key: game_media.id_game -> game.id_game
 alter table game_media add foreign key (id_game) references game(id_game);
 -- create foreign key: user_media.id_user -> users.id_user
