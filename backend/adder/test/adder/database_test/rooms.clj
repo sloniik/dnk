@@ -5,12 +5,7 @@
         [database.games]
         [database.core]
         [component.room])
-  (:require [clojure.string :as str]
-            [utilities.core :as u]
-            [database.errors :as err]
-            [korma.core :as k]))
-
-
+  (:require [utilities.core :as u]))
 
 ;; game variant
 ;(def g-t (:generated_key (k/insert :game_type

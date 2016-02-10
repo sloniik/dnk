@@ -3,11 +3,7 @@
         [component.chat]
         [database.rooms]
         [database.games]
-        [database.core])
-  (:require [clojure.string :as str]
-            [utilities.core :as u]
-            [database.errors :as err]
-            [korma.core :as k]))
+        [database.core]))
 
 (deftest chat-test
   (let [user1 1
@@ -25,8 +21,7 @@
 
         msg1 (send user1 chat1 chat-msg1)
         msg2 (send user2 chat1 chat-msg2)
-        msg3 (send user2 chat1 chat-msg1)
-        ]
+        msg3 (send user2 chat1 chat-msg1)]
 
     (testing "create-chat"
       (println "chat1: " chat1 " chat2: " chat2)
