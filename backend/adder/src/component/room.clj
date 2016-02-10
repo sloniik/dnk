@@ -2,7 +2,8 @@
   (:gen-class)
   (:require [database.core :as core]
             [database.rooms :as room-db]
-            [component.user :as user-db]
+            [component.user :as user]
+            [component.chat :as chat]
             [database.errors :as err]
             [utilities.core :as u]))
 
@@ -22,9 +23,14 @@
     r-vec))
 
 (defn create
-  "user (user-id) leaves the room (room-id)"
+  "user (user-id) leaves the room (room-id)
+  and create chat"
   [room-info]
-  (room-db/create-room room-info))
+  (let [room-id (:id_room room-info)
+        has-chat? (room-db/room-with-chat? room-id)]
+    (room-db/create-room room-info)
+    (if has-chat?
+      (chat/create room-id))))
 
 (defn quit
   "user (user-id) leaves the room (room-id)"
@@ -48,7 +54,7 @@
   "user enters room"
   [room-id user-id]
   (let [private? (room-db/private-room? room-id)
-        user-banned? (user-db/banned? user-id)]
+        user-banned? (user/banned? user-id)]
     (if user-banned?
       {:error-code (:err-code err/banned-user-error)
        :error-desc (str (:err-desc err/banned-user-error) " " user-id)}

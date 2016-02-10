@@ -147,7 +147,6 @@
       (let [entered-user (k/insert :game_users
                             (k/values room-map))]
         ;(println "enter-user-result " entered-user)
-        ;;TODO: добавить функцию добавления записи в game_users
         (:generated_key entered-user)))))
 
 
@@ -193,6 +192,7 @@
       {:error-code (:err-code err/update-game-master-in-room-error)
        :error-desc (str (:err-desc err/update-game-master-in-room-error) " " user-id
                         " in room-id " room-id)})))
+
 ;;TODO: (Future) необходимо написать функцию запроса доступа в приватную комнату
 
 ;;Создает новую комнату
@@ -208,7 +208,6 @@
                        :is_active}
   return new-room-id"
   [room-map]
-  ;;TODO: создать чат
   ;(let [room-map (assoc room-map :id_chat (create-chat))]
   (let [new-room  (k/insert :room
                             (k/values room-map))
