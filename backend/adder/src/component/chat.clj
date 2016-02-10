@@ -1,10 +1,6 @@
 (ns component.chat
   (:gen-class)
-  (:require [database.core :as core]
-            [database.chat :as chat-db]
-            [component.user :as user-db]
-            [database.errors :as err]
-            [utilities.core :as u]))
+  (:require [database.chat :as chat-db]))
 
 (defn create
   "Create chat in a room"
@@ -29,11 +25,33 @@
 (defn delete
   "delete question or answer"
   [question-id]
-  (chat-db/delete-answer question-id))
+  (chat-db/delete-question question-id))
 
 (defn last-mess
-  "return n last messages or messages after some date"
-  [chat-id n last-date]
-  (if (= n 0)
-    (chat-db/get-messages-after-date chat-id last-date)
-    (chat-db/get-n-messages chat-id n)))
+  "return n last messages or messages after some date
+  :m - chat message
+  :q - questions
+  :a - answers
+  if n == 0 then should use last-date, else - use n"
+  [chat-id n last-date message-type]
+  (cond
+    (= message-type :m)
+    (let [messages (if (= n 0)
+                     (chat-db/get-last-messages chat-id last-date)
+                     (chat-db/get-n-messages chat-id n))]
+      messages)
+    (= message-type :q)
+    (let [messages
+          (if (= n 0)
+            (chat-db/get-last-questions chat-id last-date)
+            (chat-db/get-n-questions chat-id n))
+          questions (map #(dissoc % :answer) messages)]
+      questions)
+    (= message-type :a)
+    (let [messages
+          (if (= n 0)
+            (chat-db/get-last-questions chat-id last-date)
+            (chat-db/get-n-questions chat-id n))
+          answers (map #(dissoc % :question) messages)]
+      answers)))
+

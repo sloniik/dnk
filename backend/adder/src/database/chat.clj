@@ -37,11 +37,11 @@
             (k/where
               (and
                 (= :id_chat chat-id)
-                (= :is_deleted nil)))
+                (= :is_deleted false)))
             (k/order :dt_sent :desc)
             (k/limit n)))
 
-(defn get-messages-after-date
+(defn get-last-messages
   "Get list of n last messages in chat"
   [chat-id last-update]
   (k/select :chat_Message
@@ -84,12 +84,26 @@
               (k/set-fields room-map)
               (k/where (= :id_question question-id)))))
 
-;;Удаляет ответ на вопрос
-(defn delete-answer
-  "Removes answer"
-  [question-id]
-  (let [room-map {:is_deleted true}]
-    (k/update :answer
-              (k/set-fields room-map)
-              (k/where (= :id_question question-id)))))
+(defn get-n-questions
+  "Get list of n last questions in room"
+  [room-id n]
+  (k/select :question
+            (k/fields :id_user :message_text :answer :dt_created)
+            (k/where
+              (and
+                (= :id_room room-id)
+                (= :is_deleted false)))
+            (k/order :dt_created :desc)
+            (k/limit n)))
 
+(defn get-last-questions
+  "Get list of n last questions in room"
+  [room-id last-update]
+  (k/select :chat_Message
+            (k/fields :id_user :message_text :answer :dt_created)
+            (k/where
+              (and
+                (= :id_room room-id)
+                (= :is_deleted false)
+                (> :dt_created last-update)))
+            (k/order :dt_created :desc)))
