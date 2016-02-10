@@ -17,18 +17,63 @@
 (defn vec-map->vec-by-key
   "takes vector of map and by key returns vector"
   [vec key]
-  (loop [v vec
-         result-vec []]
-      (if (nil? (key (first v)))
-        (do
-          (println result-vec)
-          result-vec)
-        (recur (drop 1 v)
-               (conj result-vec (key (first v)))))))
+  (into [] (filter #(not (nil? %)) (map #(key %) vec))))
 ;; test
-(vec-map->vec-by-key [{:a 1 :b 2} {:a 2} {:a 3} {:b 2}] :a)
+;(vec-map->vec-by-key [{:c 1 :b 2} {:a 2} {:a 3} {:b 2}] :c)
 
 (defn vec->str-with-delimiter
+  "takes vector and convert it to string with delimeter"
+  [vec str-delimiter]
+  (apply str (interpose str-delimiter vec)))
+;;test
+(vec->str-with-delimiter [1 2 3] ", ")
+
+(defn vec-map->str
+  "vector of maps convert to vector by key and further convert it to string by delimeter"
+  [vec key delimeter]
+  (let [v (vec-map->vec-by-key vec key)]
+    (vec->str-with-delimiter v delimeter)))
+
+;;  DEPRICATED functions
+(defn sel-n-upd-map
+  "return map {:tabl-name
+               :col-name
+               :field-name
+               :field-val}"
+  ([t-n ]
+   {:table-name t-n
+    :col-name ""
+    :field-name ""
+    :field-val ""})
+  ([t-n c-n]
+   {:table-name t-n
+    :col-name c-n
+    :field-name ""
+    :field-val ""})
+  ([t-n f-n f-v]
+   {:table-name t-n
+    :col-name ""
+    :field-name f-n
+    :field-val f-v})
+  ([t-n c-n f-n f-v ]
+   {:table-name t-n
+    :col-name c-n
+    :field-name f-n
+    :field-val f-v}))
+
+(defn vec-map->vec-by-key_old
+  "takes vector of map and by key returns vector"
+  [vec key]
+  (loop [v vec
+         result-vec []]
+    (if (nil? (key (first v)))
+      (do
+        (println result-vec)
+        result-vec)
+      (recur (drop 1 v)
+             (conj result-vec (key (first v)))))))
+
+(defn vec->str-with-delimiter_old
   "takes vector and convert it to string with delimeter"
   [vec str-delimiter]
   (loop [v vec
@@ -39,14 +84,6 @@
              (if (nil? (first (drop 1 v)))
                (str vstr  (first v))
                (str vstr  (first v) str-delimiter))))))
-;;test
-(vec->str-with-delimiter [1 2 3] ", ")
-
-(defn vec-map->str
-  "vector of maps convert to vector by key and further convert it to string by delimeter"
-  [vec key delimeter]
-  (let [v (vec-map->vec-by-key vec key)]
-    (vec->str-with-delimiter v delimeter)))
 
 (defn concat-vec->str-vec
   "concat two vectors to vector of strings
@@ -99,29 +136,3 @@
 ;;test
 (concat-vec->str [1 2 3] ["=?" "> ?" "like ?"] "and")
 (concat-vec->str ["user_name" "id_user"] ["=" "<"] "and")
-
-(defn sel-n-upd-map
-  "return map {:tabl-name
-               :col-name
-               :field-name
-               :field-val}"
-  ([t-n ]
-   {:table-name t-n
-    :col-name ""
-    :field-name ""
-    :field-val ""})
-  ([t-n c-n]
-   {:table-name t-n
-    :col-name c-n
-    :field-name ""
-    :field-val ""})
-  ([t-n f-n f-v]
-   {:table-name t-n
-    :col-name ""
-    :field-name f-n
-    :field-val f-v})
-  ([t-n c-n f-n f-v ]
-   {:table-name t-n
-    :col-name c-n
-    :field-name f-n
-    :field-val f-v}))
