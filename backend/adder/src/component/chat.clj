@@ -32,24 +32,24 @@
   :m - chat message
   :q - questions
   :a - answers
-  if n == 0 then should use last-date, else - use n"
+  if n == nil then should use last-date, else - use n"
   [chat-id n last-date message-type]
   (cond
     (= message-type :m)
-    (let [messages (if (= n 0)
+    (let [messages (if (nil? n)
                      (chat-db/get-last-messages chat-id last-date)
                      (chat-db/get-n-messages chat-id n))]
       messages)
     (= message-type :q)
     (let [messages
-          (if (= n 0)
+          (if (nil n)
             (chat-db/get-last-questions chat-id last-date)
             (chat-db/get-n-questions chat-id n))
           questions (map #(dissoc % :answer) messages)]
       questions)
     (= message-type :a)
     (let [messages
-          (if (= n 0)
+          (if (nil? n)
             (chat-db/get-last-questions chat-id last-date)
             (chat-db/get-n-questions chat-id n))
           answers (map #(dissoc % :question) messages)]

@@ -10,6 +10,15 @@
             [utilities.core :as u]
             [korma.core :as k]))
 
+;; вернуть текущую игру в комнате
+(defn get-rooms-game
+  "return game-id for room-id"
+  [room-id]
+  (let [room (k/select :room
+                       (k/fields {:id_game})
+                       (k/where {:id_room room-id}))]
+    (first room)))
+
 ;; выяснить приватная ли комната
 (defn private-room?
   "is room private?"
@@ -38,11 +47,15 @@
 
 ;;Получает список активных комнат конретной игры
 (defn get-rooms-with-game-list
-  "Get room list of certain game"
+  "Get room list of certain game
+  if game-id == nil then all rooms"
   [game-id]
-  (k/select :room
-            (k/where {:id_game game-id
-                      :is_active true})))
+  (if (nil? game-id)
+    (k/select :room
+              (k/where {:id_game game-id
+                        :is_active true}))
+    (k/select :room
+              (k/where {:is_active true}))))
 
 ;;Получает текущий список пользователей в конкретной комнате
 (defn get-user-list-in-room
@@ -120,30 +133,40 @@
 ;;Добавляет пользователя в комнату
 (defn add-user->room
   "Adds user to a room"
-  [room-id user-id]
-  (let [room-map {:id_room room-id
-                  :id_user user-id
-                  :dt_joined (u/now)}
+  [room-id game-id user-id]
+  (let [room-map {:id_room    room-id
+                  :id_game    game-id
+                  :id_user    user-id
+                  :dt_joined  (u/now)}
         user-already-in-room? (user-in-room? room-id user-id)]
     ;(println "ADD USER TO ROOM FUNCTION")
     ;(println "user" user-id  "in room" room-id  "? - " user-already-in-room?)
     (if user-already-in-room?
       {:error-code (:err-code err/user-already-in-room-error)
        :error-desc (str (:err-desc err/user-already-in-room-error) room-id " user-id " user-id)}
-      (let [entered-user (k/insert :room_users
+      (let [entered-user (k/insert :game_users
                             (k/values room-map))]
         ;(println "enter-user-result " entered-user)
         ;;TODO: добавить функцию добавления записи в game_users
         (:generated_key entered-user)))))
 
+
+(defn add-user
+  "add user to room and make a record in "
+  [room-id user-id]
+  (let [game-id (get-rooms-game room-id)]
+    (add-user->room room-id game-id user-id)))
+
 ;;Убирает пользователя из комнаты (задавая dt-left)
 (defn kick-user
   "Removes user from a room (set dt-left to now())"
   [room-id user-id]
-  (let [room-map {:dt_left (u/now)}]
-    (k/update :room_users
+  (let [game-id (get-rooms-game room-id)
+        room-map {:dt_left (u/now)}]
+    (k/update :game_users
               (k/set-fields room-map)
               (k/where (= :id_room room-id))
+              (k/where (= :id_game game-id))
               (k/where (= :id_user user-id))
               (k/where (= :dt_left nil)))))
 

@@ -129,17 +129,6 @@ create table room_access
 	,primary key (id_room,id_user)
 )
 engine=innodb;
--- create table: chat_user
--- ------------------------------------------------------------------------------
-create table chat_user
-(
-	`id_chat` 			bigint 			not null
-	,`id_user` 			bigint 			not null
-	,`dt_joined` 		datetime 		not null
-	,primary key (id_chat,id_user)
-)
-engine=innodb;
--- create table: media_type
 -- ------------------------------------------------------------------------------
 create table media_type
 (

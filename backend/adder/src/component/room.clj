@@ -14,7 +14,7 @@
     (u/vec-map->vec-by-key user-list :id_user)))
 
 ;;Вернуть список room-id, в которых сейчас играется game-id
-(defn get-game-rooms
+(defn get-rooms
   "get room-id vector with game game-id"
   [game-id]
   (let [rooms (room-db/get-rooms-with-game-list game-id)
@@ -26,14 +26,23 @@
   [room-info]
   (room-db/create-room room-info))
 
-(defn kill
-  "correctly kill room:
-  -kick all users and then
-  -deactivate room"
-  [room-id]
-  (let [all-user-vec (get-users room-id)]
-    (dorun (map #(room-db/kick-user room-id %) all-user-vec))
-    (room-db/deactivate-room room-id)))
+(defn quit
+  "user (user-id) leaves the room (room-id)"
+  [room-id user-id]
+  (room-db/kick-user room-id user-id))
+
+;; Расчет количества комнат, в которых играется игра
+(defn count-rooms
+  "count rooms with game-id"
+  [game-id]
+  (let [rooms (get-rooms game-id)]
+    (count rooms)))
+
+(defn count-users
+   "count rooms with game-id"
+   [room-id]
+   (let [users (room-db/get-user-list-in-room room-id)]
+     (count users)))
 
 (defn enter
   "user enters room"
@@ -45,23 +54,14 @@
        :error-desc (str (:err-desc err/banned-user-error) " " user-id)}
       (if private?
         (room-db/grant-user-access room-id user-id)
-        (let [result (room-db/add-user->room room-id user-id)]
+        (let [result (room-db/add-user room-id user-id)]
           result)))))
 
-(defn quit
-  "user (user-id) leaves the room (room-id)"
-  [room-id user-id]
-  (room-db/kick-user room-id user-id))
-
-;; Расчет количества комнат, в которых играется игра
-(defn count-rooms
-  "count rooms with game-id"
-  [game-id]
-  (let [rooms (room-db/get-rooms-with-game-list game-id)]
-    (count rooms)))
-
-(defn count-users
-   "count rooms with game-id"
-   [room-id]
-   (let [users (room-db/get-user-list-in-room room-id)]
-     (count users)))
+(defn kill
+  "correctly kill room:
+  -kick all users and then
+  -deactivate room"
+  [room-id]
+  (let [all-user-vec (get-users room-id)]
+    (dorun (map #(quit room-id %) all-user-vec))
+    (room-db/deactivate-room room-id)))
