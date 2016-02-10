@@ -1,7 +1,6 @@
 (ns component.user
   (:gen-class)
-  (:require [database.core :as core]
-            [database.users :as user-db]
+  (:require [database.users :as user-db]
             [database.errors :as err]
             [utilities.core :as u]))
 
@@ -58,49 +57,74 @@
   (salt) was generated on the client side
   (password-hash) was generated on the client side"
   [user-info]
-  (let [login-correct? (login-valid? (:login user-info))
-        email-correct? (email-valid? (:email user-info))
-        code u/get-uuid]
+  (let [login          (:login user-info)
+        email          (:email user-info)
+        passwd         (:password-hash user-info)
+        salt           (:salt user-info)
+        login-correct? (login-valid? login)
+        email-correct? (email-valid? email)
+        code           (u/get-uuid)]
     (cond
       (and login-correct? email-correct?)
-      (do
-        (user-db/create-user {:user_name     (:login user-info)
-                      :email         (:email user-info)
-                      :password_hash (:password-hash user-info)
-                      :salt          (:salt user-info)
-                      :dt_created    (u/now)
-                      :is_active     false   ;при создании человек не активен, так как надо подтвердить email
-                      :is_banned     false
-                      :is_admin      false
-                      :email_code    code})  ; код верификации email
-        (user-db/register-email (:email user-info) code))
+        (do
+          (user-db/create-user {:user_name     login
+                                :email         email
+                                :password_hash passwd
+                                :salt          salt
+                                :dt_created    (u/now)
+                                :is_active     false   ;при создании человек не активен, так как надо подтвердить email
+                                :is_banned     false
+                                :is_admin      false
+                                :email_code    code})  ; код верификации email
+          (user-db/register-email email code))
       (not login-correct?)
-      {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " " (:login user-info) )}
+        {:error-code (:err-code err/incorrect-user-login)
+         :error-desc (str (:err-desc err/incorrect-user-login) " " login)}
       (not email-correct?)
-      {:error-code (:err-code err/incorrect-user-email)
-       :error-desc (str (:err-desc err/incorrect-user-email) " " (:email user-info) )})))
+        {:error-code (:err-code err/incorrect-user-email)
+         :error-desc (str (:err-desc err/incorrect-user-email) " " email)})))
 
 ;; сценарий №2: вход пользователя по логину и паролю
 ;; проверить, что логин и пароль дейсвительные. если все ок, отдать token пользователю
 (defn login
   "login user with login-info - {:login :password-hash}"
-  [db-spec login-info]
-  (let [login-correct? (login-valid? (:login login-info))
-        user-info (user-db/get-user-info-by-login (:login login-info))
-        user-id (:id_user user-info)
-        password-correct? (password-match? user-id (:password-hash login-info))
-        user-active? (:is_active user-info)]
+  [login-info]
+  (let [login             (:login login-info)
+        login-correct?    (login-valid? login)
+        passwd            (:password-hash login-info)
+        user-info         (user-db/get-user-info-by-login login)
+        user-id           (:id_user user-info)
+        password-correct? (password-match? user-id passwd)
+        user-active?      (:is_active user-info)]
     (cond
       (and login-correct? password-correct? user-active?)
-      (user-db/create-user-session user-id); вернуть пользователю сессию
+        (user-db/create-user-session user-id); вернуть пользователю сессию
       (not login-correct?)
-      {:error-code (:err-code err/incorrect-user-login)
-       :error-desc (str (:err-desc err/incorrect-user-login) " "
-                        (:login login-info) )}
+        {:error-code (:err-code err/incorrect-user-login)
+         :error-desc (str (:err-desc err/incorrect-user-login) " " login)}
       (not password-correct?)
-      {:error-code (:err-code err/incorrect-user-passw)
-       :error-desc (:err-desc err/incorrect-user-passw)}
+        {:error-code (:err-code err/incorrect-user-passw)
+         :error-desc (:err-desc err/incorrect-user-passw)}
       (not user-active?)
-      {:error-code (:err-code err/inactive-user-error)
-       :error-desc (:err-desc err/inactive-user-error)})))
+        {:error-code (:err-code err/inactive-user-error)
+         :error-desc (:err-desc err/inactive-user-error)})))
+
+(defn update
+  "update user profile"
+  [user-id profile-map]
+  (user-db/update-user-profile user-id profile-map))
+
+(defn ban
+  "ban user"
+  [user-id]
+  (user-db/ban-user user-id))
+
+(defn deactivate
+  "deactivate user"
+  [user-id]
+  (user-db/deactivate-user user-id))
+
+(defn list
+  "get all not banned users"
+  []
+  (user-db/get-all-users))

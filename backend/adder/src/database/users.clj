@@ -1,8 +1,6 @@
 (ns database.users
   (:gen-class)
-  (:require [database.core :as core]
-            [database.errors :as err]
-            [utilities.core :as u]
+  (:require [database.errors :as err]
             [korma.core :as k]))
 
 ;;TODO: дописать entity
@@ -16,7 +14,8 @@
 (defn get-all-users
   "List of all users"
   []
-  (k/select :users))
+  (k/select :users
+            (k/where {:is_banned false})))
 
 ;;Получаем пользователя по id пользователя
 (defn get-user-info-by-id
@@ -74,6 +73,8 @@
                             (k/values media-map))))
 
 (defn change-user-media-path
+  []
+  )
 
 (defn update-user-media
   "Changes media path name")
