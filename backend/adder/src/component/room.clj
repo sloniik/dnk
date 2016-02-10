@@ -14,7 +14,7 @@
     (u/vec-map->vec-by-key user-list :id_user)))
 
 ;;Вернуть список room-id, в которых сейчас играется game-id
-(defn get-rooms
+(defn get-game-rooms
   "get room-id vector with game game-id"
   [game-id]
   (let [rooms (room-db/get-rooms-with-game-list game-id)
