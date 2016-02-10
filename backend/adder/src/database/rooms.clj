@@ -10,15 +10,6 @@
             [utilities.core :as u]
             [korma.core :as k]))
 
-;; вернуть текущую игру в комнате
-(defn get-rooms-game
-  "return game-id for room-id"
-  [room-id]
-  (let [room (k/select :room
-                       (k/fields {:id_game})
-                       (k/where {:id_room room-id}))]
-    (first room)))
-
 ;; выяснить приватная ли комната
 (defn private-room?
   "is room private?"
@@ -44,6 +35,14 @@
                          (k/where {:id_room room-id}))]
     (:has_chat result)))
 
+;; вернуть текущую игру в комнате
+(defn get-rooms-game
+  "return game-id for room-id"
+  [room-id]
+  (let [room (k/select :room
+                       (k/fields {:id_game})
+                       (k/where {:id_room room-id}))]
+    (first room)))
 
 ;;Получает список активных комнат конретной игры
 (defn get-rooms-with-game-list
