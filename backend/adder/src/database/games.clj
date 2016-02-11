@@ -28,25 +28,12 @@
   []
   (k/select :game
             (k/where {:is_private false
-                      :is_active true})))
+                      :is_deleted false})))
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
   []
   (k/select :game_type))
-
-;;Получаем список всех вариантов определенного типа игры
-(defn get-game-variants
-  [game-type-id]
-  (k/select :game_variant
-            (k/where (= :id_game_type game-type-id))))
-
-;;Получаем список игр определенного типа
-(defn get-games-by-variant
-  "Get collection of games by variant"
-  [game-variant-id]
-  (k/select :game
-            (k/where (= :id_game_variant game-variant-id))))
 
 ;;Получаем несколько новых игр
 (defn get-n-new-public-games
@@ -71,16 +58,6 @@
             (k/order :dt_created :desc)
             (k/limit n)))
 
-(defn get-n-new-original-games
-  "Get collection of n newest games"
-  [n]
-  (k/select :game
-            (k/where
-              (and
-                (= :is_deleted false)
-                (= :is_fork    false)))
-            (k/order :dt_created :desc)
-            (k/limit n)))
 
 ;;Получаем список игр конкретного автора
 (defn get-games-by-author
@@ -89,7 +66,7 @@
   (k/select :game
             (k/where
               (and
-                (= :id_author author-id)
+                (= :id_user_author author-id)
                 (= :is_deleted false)))))
 
 (defn get-all-games-by-author
@@ -97,32 +74,8 @@
   [author-id]
   (k/select :game
             (k/where
-              (= :id_author author-id))))
+              (= :id_user_author author-id))))
 
-;;Получаем список игр с idOriginal = null
-(defn get-original-games
-  "Get all games that are not forks"
-  []
-  (k/select :game
-            (k/where
-              (and
-                (= :is_deleted false)
-                (= :is_fork    false)))))
-
-(defn get-all-original-games
-  "Get all games that are not forks"
-  []
-  (k/select :game
-            (k/where
-              (= :is_deleted false))))
-
-;;Получаем список форков игры
-(defn get-game-forks
-  "Get all forks of a certain game"
-  [game-id]
-  (k/select :game
-            (k/where
-              (= :is_original game-id))))
 
 ;;Получаем набор данных [GameMediaType/TypeName GameMedia/filePath] по данной игре
 (defn get-game-media
@@ -130,7 +83,7 @@
   [game-id]
   (k/select :game_media
             (k/where
-              (= :is_game game-id))))
+              (= :id_game game-id))))
 
 ;;Получаем набор пользователей по данной игре
 (defn get-game-users
@@ -138,14 +91,14 @@
   [game-id]
   (k/select :game_users
             (k/where
-              (= :is_game game-id))))
+              (= :id_game game-id))))
 
 (defn get-game-by-id
   "Get game data by it's id"
   [game-id]
   (k/select :game
             (k/where
-              (= :is_game game-id))))
+              (= :id_game game-id))))
 
 ;;NOT IN TO-DO LIST
 (defn approve-game
@@ -181,3 +134,43 @@
       {:error-code (:err-code err/change-game-info-error)
        :error-desc (str (:err-desc err/change-game-info-error) game-id " game-info " game-info)}
       (first result))))
+
+
+;;Реализовать форки потом
+
+;(defn get-n-new-original-games
+;  "Get collection of n newest games"
+;  [n]
+;  (k/select :game
+;            (k/where
+;              (and
+;                (= :is_deleted false)
+;                (= :is_fork    false)))
+;            (k/order :dt_created :desc)
+;            (k/limit n)))
+;
+;
+;;;Получаем список игр с idOriginal = null
+;(defn get-original-games
+;  "Get all games that are not forks"
+;  []
+;  (k/select :game
+;            (k/where
+;              (and
+;                (= :is_deleted false)
+;                (= :is_fork    false)))))
+;
+;(defn get-all-original-games
+;  "Get all games that are not forks"
+;  []
+;  (k/select :game
+;            (k/where
+;              (= :is_deleted false))))
+;
+;;;Получаем список форков игры
+;(defn get-game-forks
+;  "Get all forks of a certain game"
+;  [game-id]
+;  (k/select :game
+;            (k/where
+;              (= :is_original game-id))))

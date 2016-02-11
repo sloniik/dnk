@@ -91,7 +91,7 @@ create table game_users
 	,`id_room`          bigint          not null
 	,`id_user` 			bigint 			not null
 	,`dt_joined` 		datetime 		not null
-	,`dt_left`          datetime        not null
+	,`dt_left`          datetime        null
 	,primary key (id_game, id_user)
 )
 engine=innodb;
@@ -129,6 +129,17 @@ create table room_access
 	,primary key (id_room,id_user)
 )
 engine=innodb;
+-- create table: chat_user
+-- ------------------------------------------------------------------------------
+create table chat_user
+(
+	`id_chat` 			bigint 			not null
+	,`id_user` 			bigint 			not null
+	,`dt_joined` 		datetime 		not null
+	,primary key (id_chat,id_user)
+)
+engine=innodb;
+-- create table: media_type
 -- ------------------------------------------------------------------------------
 create table media_type
 (
@@ -239,9 +250,9 @@ create table question
 	,`id_user` 				bigint 			not null
 	,`message_text`			varchar(1024) 	not null
     ,`answer`  				varchar(1024) 	null
-	,`dt_created` 			datetime 		not null 
+	,`dt_created` 			datetime 		not null
     ,`dt_answered`			datetime		null
-	,`is_deleted` 			bit 			not null 
+	,`is_deleted` 			bit 			not null
 	,primary key (id_question)
 )
 engine=innodb
@@ -280,8 +291,8 @@ alter table game_log add foreign key (id_log_entry_type) references log_entry_ty
 alter table game_log add foreign key (id_game) references game_access(id_game);
 -- create foreign key: game_access.id_user -> users.id_user
 alter table game_access add foreign key (id_user) references users(id_user);
--- create foreign key: game_users.id_game -> game_access.id_game
-alter table game_users add foreign key (id_game) references game_access(id_game);
+-- create foreign key: game_users.id_game -> game.id_game
+alter table game_users add foreign key (id_game) references game(id_game);
 -- create foreign key: game_users.id_user -> users.id_user
 alter table game_users add foreign key (id_user) references users(id_user);
 -- create foreign key: game_users.id_room -> room.id_room
@@ -309,9 +320,374 @@ alter table question add foreign key (id_user) references users(id_user);
 -- create foreign key: users.id_user_session -> user_session.id_user_session
 alter table users add foreign key (id_user_session) references user_session(id_user_session);
 
-;;Добавления для прохождения тестов по rooms
+
+
+
+-- Добавления для прохождения тестов
+
 insert into `dnk_test`.`game_type` (`id_game_type`, `type_name`) values ('1', 'ДаНетКи');
 
-;;унификация полей для вопросов и сообщений в чате
-alter table `dnk_test`.`question`
-change column `message` `message_text` varchar(1024) not null ;
+
+-- обычный пользователь
+insert into `users` (`user_name`
+					,`password_hash`
+					,`salt`
+					,`email`
+					,`email-code`
+					,`user_story`
+					,`phone_number`
+					,`user_token`
+					,`dt_created`
+					,`is_online`
+					,`is_active`
+					,`is_banned`
+					,`is_admin`)
+	VALUES (
+		 'test1'
+        ,'test1'
+        ,'test1'
+        ,'test1@test.com'
+        ,'test1'
+		,'test1'
+        ,'test1'
+        ,'test1'
+        , now()
+        , false
+        , false
+        , false
+        , false
+    );
+
+-- пользователь в сети
+insert into `users` (`user_name`
+					,`password_hash`
+					,`salt`
+					,`email`
+					,`email-code`
+					,`user_story`
+					,`phone_number`
+					,`user_token`
+					,`dt_created`
+					,`is_online`
+					,`is_active`
+					,`is_banned`
+					,`is_admin`)
+	VALUES (
+		 'test2'
+        ,'test2'
+        ,'test2'
+        ,'test2@test.com'
+        ,'test2'
+		,'test2'
+        ,'test2'
+        ,'test2'
+        , now()
+        , true
+        , false
+        , false
+        , false
+    );
+
+-- активный пользователь
+insert into `users` (`user_name`
+					,`password_hash`
+					,`salt`
+					,`email`
+					,`email-code`
+					,`user_story`
+					,`phone_number`
+					,`user_token`
+					,`dt_created`
+					,`is_online`
+					,`is_active`
+					,`is_banned`
+					,`is_admin`)
+	VALUES (
+		 'test3'
+        ,'test3'
+        ,'test3'
+        ,'test3@test.com'
+        ,'test3'
+		,'test3'
+        ,'test3'
+        ,'test3'
+        , now()
+        , false
+        , true
+        , false
+        , false
+    );
+
+
+ -- забаненый пользователь
+ insert into `users` (`user_name`
+					,`password_hash`
+					,`salt`
+					,`email`
+					,`email-code`
+					,`user_story`
+					,`phone_number`
+					,`user_token`
+					,`dt_created`
+					,`is_online`
+					,`is_active`
+					,`is_banned`
+					,`is_admin`)
+	VALUES (
+		 'test4'
+        ,'test4'
+        ,'test4'
+        ,'test4@test.com'
+        ,'test4'
+		,'test4'
+        ,'test4'
+        ,'test4'
+        , now()
+        , false
+        , false
+        , true
+        , false
+    );
+
+
+-- админ
+insert into `users` (`user_name`
+					,`password_hash`
+					,`salt`
+					,`email`
+					,`email-code`
+					,`user_story`
+					,`phone_number`
+					,`user_token`
+					,`dt_created`
+					,`is_online`
+					,`is_active`
+					,`is_banned`
+					,`is_admin`)
+	VALUES (
+		 'test5'
+        ,'test5'
+        ,'test5'
+        ,'test5@test.com'
+        ,'test5'
+		,'test5'
+        ,'test5'
+        ,'test5'
+        , now()
+        , false
+        , false
+        , false
+        , true
+    );
+
+
+ -- обычная игра
+insert into `game` (`id_user_author`
+					,`id_game_type`
+                    ,`title`
+                    ,`description`
+                    ,`dt_created`
+                    ,`game_solution`
+                    ,`is_fork`
+                    ,`id_original`
+                    ,`is_deleted`
+                    ,`expected_duration`
+					,`preferable_user_num`
+					,`is_private`)
+		VALUES(
+			  1
+            , 1
+            , 'test1'
+            , 'test1'
+            , now()
+            , 'test1'
+            , false
+            , null
+            , false
+            , 1
+            , 1
+            , false
+		);
+
+
+-- игра-форк
+insert into `game` (`id_user_author`
+					,`id_game_type`
+                    ,`title`
+                    ,`description`
+                    ,`dt_created`
+                    ,`game_solution`
+                    ,`is_fork`
+                    ,`id_original`
+                    ,`is_deleted`
+                    ,`expected_duration`
+					,`preferable_user_num`
+					,`is_private`)
+		VALUES(
+			  1
+            , 1
+            , 'test2'
+            , 'test2'
+            , now()
+            , 'test2'
+            , true
+            , 1
+            , false
+            , 1
+            , 1
+            , false
+		);
+
+ -- удаленная игра
+ insert into `game` (`id_user_author`
+					,`id_game_type`
+                    ,`title`
+                    ,`description`
+                    ,`dt_created`
+                    ,`game_solution`
+                    ,`is_fork`
+                    ,`id_original`
+                    ,`is_deleted`
+                    ,`expected_duration`
+					,`preferable_user_num`
+					,`is_private`)
+		VALUES(
+			  1
+            , 1
+            , 'test3'
+            , 'test3'
+            , now()
+            , 'test3'
+            , false
+            , null
+            , true
+            , 1
+            , 1
+            , false
+		);
+
+-- приватная игра
+insert into `game` (`id_user_author`
+					,`id_game_type`
+                    ,`title`
+                    ,`description`
+                    ,`dt_created`
+                    ,`game_solution`
+                    ,`is_fork`
+                    ,`id_original`
+                    ,`is_deleted`
+                    ,`expected_duration`
+					,`preferable_user_num`
+					,`is_private`)
+		VALUES(
+			  1
+            , 1
+            , 'test4'
+            , 'test4'
+            , now()
+            , 'test4'
+            , false
+            , null
+            , false
+            , 1
+            , 1
+            , true
+		);
+
+-- приватная игра от пользователя2
+insert into `game` (`id_user_author`
+					,`id_game_type`
+                    ,`title`
+                    ,`description`
+                    ,`dt_created`
+                    ,`game_solution`
+                    ,`is_fork`
+                    ,`id_original`
+                    ,`is_deleted`
+                    ,`expected_duration`
+					,`preferable_user_num`
+					,`is_private`)
+		VALUES(
+			  2
+            , 1
+            , 'test5'
+            , 'test5'
+            , now()
+            , 'test5'
+            , false
+            , null
+            , false
+            , 1
+            , 1
+            , true
+		);
+
+
+-- тестовые медиа для игры
+insert into game_media (
+	  `id_game`
+    , `file_path`
+    )
+values (
+	  1
+    , 'test'
+);
+
+
+-- тестовый режим для игры
+insert into room_mode (`mode_name`) values ('test');
+
+-- тестовая комната
+insert into room (
+	`id_game`
+	,`id_user_master`
+	,`title`
+	,`is_private`
+	,`has_chat`
+	,`id_room_mode`
+	,`dt_start`
+	,`dt_end`
+	,`is_active`)
+values (
+	  1
+    , 1
+    , 'test'
+    , false
+    , true
+    , 1
+    , now()
+    , null
+    , true);
+
+-- пользователь1 в игру
+insert into game_users (
+	`id_game`,
+    `id_user`,
+    `id_room`,
+    `dt_joined`,
+    `dt_left`)
+values (
+	  1
+    , 1
+    , 1
+    , now()
+    , null
+);
+
+-- пользователь2 в игру
+insert into game_users (
+	`id_game`,
+    `id_user`,
+    `id_room`,
+    `dt_joined`,
+    `dt_left`)
+values (
+	  1
+    , 2
+    , 1
+    , now()
+    , now()
+);
+
+
+

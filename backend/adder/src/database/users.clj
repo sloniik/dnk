@@ -72,12 +72,9 @@
   (:generated_key (k/insert :user_media
                             (k/values media-map))))
 
-(defn change-user-media-path
-  []
-  )
+(defn change-user-media-path [])
 
-(defn update-user-media
-  "Changes media path name")
+(defn update-user-media [] "Changes media path name")
 
 ;;TODO: функция должна возращать файл, а не путь к файлу? Может так и назвать функцию или доописать
 (defn get-user-media
