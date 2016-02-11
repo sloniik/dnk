@@ -1,28 +1,7 @@
 drop  schema if exists dnk_test;
 create schema dnk_test;
 use dnk_test;
--- create table: user_session
-create table user_session
-(
-	`id_user_session` 	bigint 			not null auto_increment
-	,`id_user` 			bigint 			not null
-	,`session_token` 	char(64) 		not null
-	,`dt_session_start` datetime 		not null
-	,`dt_session_end` 	datetime  		null
-	,primary key (id_user_session)
-)
-engine=innodb;
--- create table: game_access
-create table game_access
-(
-	`id_game` 			bigint 			not null
-	,`id_user` 			bigint 			not null
-	,`is_active` 		bit 			not null
-	,`dt_granted` 		datetime 		not null
-	,`dt_revoked` 		datetime  		null
-	,primary key (id_game, id_user)
-)
-engine=innodb;
+
 -- create table: room
 create table room
 (
@@ -37,14 +16,6 @@ create table room
 	,`dt_end` 			datetime  		null
 	,`is_active` 		bit 			not null
 	,primary key (id_room)
-)
-engine=innodb;
--- create table: game_mode
-create table room_mode
-(
-	`id_room_mode` 	    int 			not null auto_increment
-	,`mode_name`        varchar(250)    not null
-	,primary key (id_room_mode)
 )
 engine=innodb;
 
@@ -67,36 +38,8 @@ create table game
 	,primary key (id_game)
 )
 engine=innodb;
--- create table: game_media
-create table game_media
-(
-	`id_game_media` 	bigint 			not null auto_increment
-	,`id_game`			bigint 			not null
-	,`file_path` 		varchar(250) 	not null
-	,primary key (id_game_media)
-)
-engine=innodb;
--- create table: game_type
-create table game_type
-(
-	`id_game_type` 		int 			not null auto_increment
-	,`type_name` 		varchar(250) 	not null
-	,primary key (id_game_type)
-)
-engine=innodb;
--- create table: game_users
-create table game_users
-(
-	`id_game` 			bigint 			not null
-	,`id_room`          bigint          not null
-	,`id_user` 			bigint 			not null
-	,`dt_joined` 		datetime 		not null
-	,`dt_left`          datetime        null
-	,primary key (id_game, id_user)
-)
-engine=innodb;
+
 -- create table: users
--- ------------------------------------------------------------------------------
 create table users
 (
 	`id_user` 			bigint 			not null auto_increment
@@ -117,108 +60,8 @@ create table users
 	,primary key (id_user)
 )
 engine=innodb;
--- create table: room_access
--- ------------------------------------------------------------------------------
-create table room_access
-(
-	`id_room` 			bigint 			not null
-	,`id_user` 			bigint 			not null
-	,`is_active` 		bit 			not null
-	,`dt_granted` 		datetime 		not null
-	,`dt_revoked` 		datetime  		null
-	,primary key (id_room,id_user)
-)
-engine=innodb;
--- create table: chat_user
--- ------------------------------------------------------------------------------
-create table chat_user
-(
-	`id_chat` 			bigint 			not null
-	,`id_user` 			bigint 			not null
-	,`dt_joined` 		datetime 		not null
-	,primary key (id_chat,id_user)
-)
-engine=innodb;
--- create table: media_type
--- ------------------------------------------------------------------------------
-create table media_type
-(
-	`id_media_type` 	int 			not null auto_increment
-	,`media_type_name`	varchar(250) 	not null
-    ,`is_active` 		bit 			not null
-	,primary key (id_media_type)
-)
-engine=innodb;
--- create table: user_media
--- ------------------------------------------------------------------------------
-create table user_media
-(
-	`id_user_media` 	bigint  		not null auto_increment
-	,`id_user` 			bigint 			not null
-	,`id_media_type` 	int 			not null
-	,`file_path` 		varchar(1024) 	not null
-    ,primary key (id_user_media)
-)
-engine=innodb;
--- create table: log_entry_type
--- ------------------------------------------------------------------------------
-create table log_entry_type
-(
-	`id_log_entry_type` int 			not null
-	,`type_name` 		varchar(250) 	not null
-    ,primary key (id_log_entry_type)
-)
-engine=innodb;
--- create table: user_log
--- ------------------------------------------------------------------------------
-create table user_log
-(
-	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null
-	,`id_user` 				bigint 			not null
-	,`description` 			varchar(2048) 	not null
-	,`dt_created` 			datetime 		not null
-	,primary key (id_log_entry)
-)
-engine=innodb;
--- create table: room_log
--- ------------------------------------------------------------------------------
-create table room_log
-(
-	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null
-	,`id_room` 				bigint 			not null
-	,`description` 			varchar(2048) 	not null
-	,`dt_created` 			datetime 		not null
-	,primary key (id_log_entry)
-)
-engine=innodb;
--- create table: game_log
--- ------------------------------------------------------------------------------
-create table game_log
-(
-	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null
-	,`id_game` 				bigint 			not null
-	,`description` 			varchar(2048) 	not null
-	,`dt_created` 			datetime 		not null
-    ,primary key (id_log_entry)
-)
-engine=innodb;
--- create table: chat_log
--- ------------------------------------------------------------------------------
-create table chat_log
-(
-	`id_log_entry` 			bigint 			not null auto_increment
-	,`id_log_entry_type` 	int 			not null
-	,`id_chat` 				bigint 			not null
-	,`description` 			varchar(2048)	not null
-	,`dt_created` 			datetime 		not null
-	,primary key (id_log_entry)
-)
-engine=innodb;
+
 -- create table: chat
--- ------------------------------------------------------------------------------
 create table chat
 (
 	`id_chat` 				bigint 			not null auto_increment
@@ -228,8 +71,8 @@ create table chat
 	,primary key (id_chat)
 )
 engine=innodb;
+
 -- create table: chat_message
--- ------------------------------------------------------------------------------
 create table chat_message
 (
 	`id_message` 			bigint 			not null auto_increment
@@ -241,8 +84,8 @@ create table chat_message
 	,primary key (id_message)
 )
 engine=innodb;
+
 -- create table: question
--- ------------------------------------------------------------------------------
 create table question
 (
 	`id_question` 			bigint 			not null auto_increment
@@ -255,8 +98,172 @@ create table question
 	,`is_deleted` 			bit 			not null
 	,primary key (id_question)
 )
-engine=innodb
-;
+engine=innodb;
+
+-- create table: game_users
+create table game_users
+(
+	`id_game` 			bigint 			not null
+	,`id_room`          bigint          not null
+	,`id_user` 			bigint 			not null
+	,`dt_joined` 		datetime 		not null
+	,`dt_left`          datetime        null
+	,primary key (id_game, id_user)
+)
+engine=innodb;
+
+-- create table: user_session
+create table user_session
+(
+	`id_user_session` 	bigint 			not null auto_increment
+	,`id_user` 			bigint 			not null
+	,`session_token` 	char(64) 		not null
+	,`dt_session_start` datetime 		not null
+	,`dt_session_end` 	datetime  		null
+	,primary key (id_user_session)
+)
+engine=innodb;
+
+-- create table: game_access
+create table game_access
+(
+	`id_game` 			bigint 			not null
+	,`id_user` 			bigint 			not null
+	,`is_active` 		bit 			not null
+	,`dt_granted` 		datetime 		not null
+	,`dt_revoked` 		datetime  		null
+	,primary key (id_game, id_user)
+)
+engine=innodb;
+
+-- create table: game_mode
+create table room_mode
+(
+	`id_room_mode` 	    int 			not null auto_increment
+	,`mode_name`        varchar(250)    not null
+	,primary key (id_room_mode)
+)
+engine=innodb;
+
+-- create table: room_access
+create table room_access
+(
+	`id_room` 			bigint 			not null
+	,`id_user` 			bigint 			not null
+	,`is_active` 		bit 			not null
+	,`dt_granted` 		datetime 		not null
+	,`dt_revoked` 		datetime  		null
+	,primary key (id_room,id_user)
+)
+engine=innodb;
+
+-- create table: game_type
+create table game_type
+(
+	`id_game_type` 		int 			not null auto_increment
+	,`type_name` 		varchar(250) 	not null
+	,primary key (id_game_type)
+)
+engine=innodb;
+
+-- create table: game_media
+create table game_media
+(
+	`id_game_media` 	bigint 			not null auto_increment
+	,`id_game`			bigint 			not null
+	,`file_path` 		varchar(250) 	not null
+	,primary key (id_game_media)
+)
+engine=innodb;
+
+-- create table: media_type
+create table media_type
+(
+	`id_media_type` 	int 			not null auto_increment
+	,`media_type_name`	varchar(250) 	not null
+    ,`is_active` 		bit 			not null
+	,primary key (id_media_type)
+)
+engine=innodb;
+
+-- create table: chat_user
+create table chat_user
+(
+	`id_chat` 			bigint 			not null
+	,`id_user` 			bigint 			not null
+	,`dt_joined` 		datetime 		not null
+	,primary key (id_chat,id_user)
+)
+engine=innodb;
+
+-- create table: user_media
+create table user_media
+(
+	`id_user_media` 	bigint  		not null auto_increment
+	,`id_user` 			bigint 			not null
+	,`id_media_type` 	int 			not null
+	,`file_path` 		varchar(1024) 	not null
+    ,primary key (id_user_media)
+)
+engine=innodb;
+
+-- create table: log_entry_type
+create table log_entry_type
+(
+	`id_log_entry_type` int 			not null
+	,`type_name` 		varchar(250) 	not null
+    ,primary key (id_log_entry_type)
+)
+engine=innodb;
+
+-- create table: user_log
+create table user_log
+(
+	`id_log_entry` 			bigint 			not null auto_increment
+	,`id_log_entry_type` 	int 			not null
+	,`id_user` 				bigint 			not null
+	,`description` 			varchar(2048) 	not null
+	,`dt_created` 			datetime 		not null
+	,primary key (id_log_entry)
+)
+engine=innodb;
+
+-- create table: room_log
+create table room_log
+(
+	`id_log_entry` 			bigint 			not null auto_increment
+	,`id_log_entry_type` 	int 			not null
+	,`id_room` 				bigint 			not null
+	,`description` 			varchar(2048) 	not null
+	,`dt_created` 			datetime 		not null
+	,primary key (id_log_entry)
+)
+engine=innodb;
+
+-- create table: game_log
+create table game_log
+(
+	`id_log_entry` 			bigint 			not null auto_increment
+	,`id_log_entry_type` 	int 			not null
+	,`id_game` 				bigint 			not null
+	,`description` 			varchar(2048) 	not null
+	,`dt_created` 			datetime 		not null
+    ,primary key (id_log_entry)
+)
+engine=innodb;
+
+-- create table: chat_log
+create table chat_log
+(
+	`id_log_entry` 			bigint 			not null auto_increment
+	,`id_log_entry_type` 	int 			not null
+	,`id_chat` 				bigint 			not null
+	,`description` 			varchar(2048)	not null
+	,`dt_created` 			datetime 		not null
+	,primary key (id_log_entry)
+)
+engine=innodb;
+
 -- create foreign key: room_access.id_user -> users.id_user
 alter table room_access add foreign key (id_user) references users(id_user);
 -- create foreign key: room.id_room_mode -> room_mode.id_room_mode

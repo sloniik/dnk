@@ -29,6 +29,7 @@
   (k/select :game
             (k/where {:is_private false
                       :is_deleted false})))
+
 ;;Получаем список всех типов игр
 (defn get-game-types
   "Get all available game types"
